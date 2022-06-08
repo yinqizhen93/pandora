@@ -1,0 +1,2 @@
+cd ..
+go generate ./ent

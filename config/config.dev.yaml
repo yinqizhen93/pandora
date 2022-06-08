@@ -1,0 +1,22 @@
+server:
+  port: 9000
+# 数据库配置
+database:
+  driverName: mysql
+  host: 81.68.84.214
+  port: 3306
+  database: myschema
+  username: root
+  password: Admin@123
+  charset: utf8mb4
+  loc: Asia/Shanghai
+  maxConnPool: 10 # 最大的连接数， 超过这个数量则等待释放，不会再创建新的连接
+  maxIdleConns: 2 # 最大空闲连接数
+
+
+log:
+  logFile: logs/log
+  maxAge: 30 #保留时间（天）
+  rotateTime: 1 #切分时间间隔（小时）
+  errorLog: logs/error
+
