@@ -6,6 +6,8 @@ import (
 
 var Router = gin.Default()
 
+//var Router = gin.New()
+
 func InitRouter() {
 	initAuthRouter()
 	initStockRouter()
@@ -16,4 +18,9 @@ func InitRouter() {
 	//if err != nil {
 	//	return
 	//}
+}
+
+func init() {
+	// 使用自定义logger 和 recovery
+	//Router.Use(middleware.GinLogger(logs.Logger), middleware.GinRecovery(logs.Logger, true))
 }

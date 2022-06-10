@@ -24,14 +24,17 @@ func GetCurrentUser(c *gin.Context) {
 	if !ok {
 		c.JSON(200, gin.H{
 			"success": false,
-			"code":    2004,
-			"msg":     "user 不存在",
+			"errCode": 2004,
+			"errMsg":  "user 不存在",
 		})
 	}
 	db.DB.Where("id = ?", curUserId).First(&users)
 	fmt.Println(users)
 	//fmt.Println(result)
-	c.JSON(200, users)
+	c.JSON(200, gin.H{
+		"success": true,
+		"data":    users[0],
+	})
 }
 
 type UserRequest struct {

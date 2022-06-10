@@ -6,6 +6,7 @@ import (
 	"pandora/db"
 	"pandora/models"
 	"pandora/service"
+	"pandora/utils"
 )
 
 type UserInfo struct {
@@ -18,10 +19,7 @@ func Login(c *gin.Context) {
 	var user UserInfo
 	err := c.ShouldBind(&user)
 	if err != nil {
-		c.JSON(http.StatusOK, gin.H{
-			"code": 2001,
-			"msg":  "无效的参数",
-		})
+		c.JSON(http.StatusOK, utils.FailResponse(2001, "无效的参数"))
 		return
 	}
 	// 校验用户名和密码是否正确
@@ -33,16 +31,12 @@ func Login(c *gin.Context) {
 			panic(err)
 		}
 		c.JSON(http.StatusOK, gin.H{
-			"code": 200,
-			"msg":  "success",
-			"data": gin.H{"token": tokenString},
+			"success": true,
+			"data":    gin.H{"token": tokenString},
 		})
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{
-		"code": 2002,
-		"msg":  "鉴权失败",
-	})
+	c.JSON(http.StatusOK, utils.FailResponse(2002, "用户名或密码错误"))
 	return
 }
 

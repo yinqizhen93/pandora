@@ -1,9 +1,8 @@
 package middleware
 
 import (
-	"fmt"
 	"github.com/gin-gonic/gin"
-	"net/http"
+	"log"
 	"pandora/service"
 	"strings"
 )
@@ -15,33 +14,40 @@ func JWTAuthMiddleware() gin.HandlerFunc {
 		// 这里假设Token放在Header的Authorization中，并使用Bearer开头
 		// 这里的具体实现方式要依据你的实际业务情况决定
 		authHeader := c.Request.Header.Get("Authorization")
-		fmt.Println("authHeader", authHeader)
 		if authHeader == "" {
-			c.JSON(http.StatusOK, gin.H{
-				"code": 2003,
-				"msg":  "请求头中auth为空",
+			//c.JSON(http.StatusOK, gin.H{
+			//	"code": 2003,
+			//	"msg":  "请求头中auth为空",
+			//})
+			c.AbortWithStatusJSON(401, gin.H{
+				"msg": "请求头中auth为空",
 			})
-			c.Abort()
 			return
 		}
 		// 按空格分割
 		parts := strings.SplitN(authHeader, " ", 2)
 		if !(len(parts) == 2 && parts[0] == "Bearer") {
-			c.JSON(http.StatusOK, gin.H{
-				"code": 2004,
-				"msg":  "请求头中auth格式有误",
+			//c.JSON(http.StatusOK, gin.H{
+			//	"code": 2004,
+			//	"msg":  "请求头中auth格式有误",
+			//})
+			c.AbortWithStatusJSON(401, gin.H{
+				"msg": "请求头中auth格式有误",
 			})
-			c.Abort()
 			return
 		}
 		// parts[1]是获取到的tokenString，我们使用之前定义好的解析JWT的函数来解析它
 		mc, err := service.ParseToken(parts[1])
 		if err != nil {
-			c.JSON(http.StatusOK, gin.H{
-				"code": 2005,
-				"msg":  "无效的Token",
+			log.Println(err)
+			//c.JSON(http.StatusOK, gin.H{
+			//	"success": false,
+			//	"errCode": 2005,
+			//	"errMsg":  "无效的Token",
+			//})
+			c.AbortWithStatusJSON(401, gin.H{
+				"msg": "无效的Token",
 			})
-			c.Abort()
 			return
 		}
 		// 将当前请求的userId信息保存到请求的上下文c上
