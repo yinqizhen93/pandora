@@ -3,6 +3,8 @@ package auth
 import (
 	"github.com/gin-gonic/gin"
 	"net/http"
+	"pandora/db"
+	"pandora/models"
 	"pandora/service"
 )
 
@@ -23,11 +25,15 @@ func Login(c *gin.Context) {
 		return
 	}
 	// 校验用户名和密码是否正确
-	if user.Username == "q1mi" && user.Password == "q1mi123" {
+	if user.Username == "admin" && user.Password == "123" {
 		// 生成Token
-		tokenString, _ := service.CreateToken(user.Username)
+		userId := getUserIdByName(user.Username)
+		tokenString, err := service.CreateToken(userId)
+		if err != nil {
+			panic(err)
+		}
 		c.JSON(http.StatusOK, gin.H{
-			"code": 2000,
+			"code": 200,
 			"msg":  "success",
 			"data": gin.H{"token": tokenString},
 		})
@@ -38,4 +44,10 @@ func Login(c *gin.Context) {
 		"msg":  "鉴权失败",
 	})
 	return
+}
+
+func getUserIdByName(name string) int32 {
+	var user models.User
+	db.DB.Where("username = ?", name).First(&user)
+	return user.Id
 }

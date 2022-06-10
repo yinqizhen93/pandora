@@ -12,7 +12,23 @@ import (
 
 func GetUser(c *gin.Context) {
 	var users []models.User
-	db.DB.Find(&users)
+	db.DB.First(&users)
+	fmt.Println(users)
+	//fmt.Println(result)
+	c.JSON(200, users)
+}
+
+func GetCurrentUser(c *gin.Context) {
+	var users []models.User
+	curUserId, ok := c.Get("userId")
+	if !ok {
+		c.JSON(200, gin.H{
+			"success": false,
+			"code":    2004,
+			"msg":     "user 不存在",
+		})
+	}
+	db.DB.Where("id = ?", curUserId).First(&users)
 	fmt.Println(users)
 	//fmt.Println(result)
 	c.JSON(200, users)
