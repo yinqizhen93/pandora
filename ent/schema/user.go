@@ -2,8 +2,8 @@ package schema
 
 import (
 	"entgo.io/ent"
-	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
+	"time"
 )
 
 // User holds the schema definition for the User entity.
@@ -14,21 +14,15 @@ type User struct {
 // Fields of the User.
 func (User) Fields() []ent.Field {
 	return []ent.Field{
-		field.Int("age").
-			Positive(),
-		field.String("name").
-			Default("unknown"),
+		field.String("username").Unique(),
+		field.String("password"),
+		field.String("email").Unique(),
+		field.Time("createdAt").StorageKey("created_at").Default(time.Now).Immutable(),
+		field.Time("updatedAt").StorageKey("updated_at").Default(time.Now).UpdateDefault(time.Now),
 	}
 }
 
 // Edges of the User.
 func (User) Edges() []ent.Edge {
-	return []ent.Edge{
-		edge.To("cars", Car.Type),
-		// Create an inverse-edge called "groups" of type `Group`
-		// and reference it to the "users" edge (in Group schema)
-		// explicitly using the `Ref` method.
-		edge.From("groups", Group.Type).
-			Ref("users"),
-	}
+	return nil
 }

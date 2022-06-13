@@ -1,12 +1,17 @@
 package auth
 
 import (
+	"context"
+	"fmt"
 	"github.com/gin-gonic/gin"
+	"github.com/pkg/errors"
 	"net/http"
 	"pandora/db"
-	"pandora/models"
+	"pandora/ent/user"
+	"pandora/logs"
 	"pandora/service"
 	"pandora/utils"
+	"runtime/debug"
 )
 
 type UserInfo struct {
@@ -16,16 +21,22 @@ type UserInfo struct {
 
 func Login(c *gin.Context) {
 	// 用户发送用户名和密码过来
-	var user UserInfo
-	err := c.ShouldBind(&user)
+	var userInf UserInfo
+	err := c.ShouldBind(&userInf)
 	if err != nil {
 		c.JSON(http.StatusOK, utils.FailResponse(2001, "无效的参数"))
 		return
 	}
 	// 校验用户名和密码是否正确
-	if user.Username == "admin" && user.Password == "123" {
+	if userInf.Username == "admin" && userInf.Password == "123" {
 		// 生成Token
-		userId := getUserIdByName(user.Username)
+		userId, err := getUserIdByName(userInf.Username)
+		if err != nil {
+			// todo 记录日志
+			logs.Logger.Error(fmt.Sprintf("获取用户失败：%s; \n %s", err, debug.Stack()))
+			c.JSON(http.StatusOK, utils.FailResponse(2009, "登录失败"))
+			return
+		}
 		tokenString, err := service.CreateToken(userId)
 		if err != nil {
 			panic(err)
@@ -40,8 +51,12 @@ func Login(c *gin.Context) {
 	return
 }
 
-func getUserIdByName(name string) int32 {
-	var user models.User
-	db.DB.Where("username = ?", name).First(&user)
-	return user.Id
+func getUserIdByName(name string) (int, error) {
+	ctx := context.Background()
+	userId, err := db.Client.User.Query().Where(user.UsernameEQ(name)).Select("id").Int(ctx)
+	//db.DB.Where("username = ?", name).First(&user)
+	if err != nil {
+		return 0, errors.Wrap(err, "getUserIdByName failed")
+	}
+	return userId, nil
 }

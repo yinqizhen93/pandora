@@ -11,16 +11,16 @@ import (
 // 我们这里需要额外记录一个username字段，所以要自定义结构体
 // 如果想要保存更多信息，都可以添加到这个结构体中
 type Claims struct {
-	UserId int32 `json:"userId"`
+	UserId int `json:"userId"`
 	jwt.StandardClaims
 }
 
-const TokenExpireDuration = time.Second * 20
+const TokenExpireDuration = time.Hour * 2
 
 var Secret = []byte("夏天夏天悄悄过去")
 
 // CreateToken 生成JWT
-func CreateToken(userId int32) (string, error) {
+func CreateToken(userId int) (string, error) {
 	// 创建一个我们自己的声明
 	c := Claims{
 		userId, // 自定义字段

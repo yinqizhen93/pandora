@@ -1,68 +1,40 @@
 package db
 
 import (
-	"context"
+	"database/sql"
+	entsql "entgo.io/ent/dialect/sql"
 	"fmt"
+	_ "github.com/go-sql-driver/mysql"
 	"github.com/spf13/viper"
-	"gorm.io/driver/mysql"
-	"gorm.io/gorm"
-	"log"
 	"pandora/ent"
-	"pandora/logs"
 )
 
-var DB *gorm.DB
+var Client *ent.Client
 
-func InitDB() *gorm.DB {
+func InitDB() *ent.Client {
 	host := viper.GetString("database.host")
 	port := viper.GetString("database.port")
 	user := viper.GetString("database.username")
 	passwd := viper.GetString("database.password")
 	database := viper.GetString("database.database")
-	dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8mb4&parseTime=True&loc=Local",
-		user, passwd, host, port, database)
-	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
-	if err != nil {
-		panic("fail to connect to mysql")
-	}
-	sqlDb, err := db.DB()
-	if err != nil {
-		logs.Logger.Error(fmt.Sprintf("数据库初始化失败:%s", err))
-		panic(err)
-	}
 	maxConnPool := viper.GetInt("database.maxConnPool")
 	maxIdleConns := viper.GetInt("database.maxIdleConns")
-	sqlDb.SetMaxOpenConns(maxConnPool)
-	sqlDb.SetMaxIdleConns(maxIdleConns)
-	DB = db
-	return DB
-}
-
-func InitDB2() *ent.Client {
-	host := viper.GetString("database.host")
-	port := viper.GetString("database.port")
-	user := viper.GetString("database.username")
-	passwd := viper.GetString("database.password")
-	database := viper.GetString("database.database")
 	dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8mb4&parseTime=True&loc=Local",
 		user, passwd, host, port, database)
-	client, err := ent.Open("mysql", dsn)
+	db, err := sql.Open("mysql", dsn)
 	if err != nil {
-		panic("fail to connect to mysql")
+		panic(fmt.Sprintf("数据库初始化失败:%s", err))
 	}
-	//sqlDb, err := db.DB()
-	//if err != nil {
-	//	service.Logger.Error(fmt.Sprintf("数据库初始化失败:%s", err))
-	//	panic(err)
-	//}
-	//maxConnPool := viper.GetInt("database.maxConnPool")
-	//maxIdleConns := viper.GetInt("database.maxIdleConns")
-	//sqlDb.SetMaxOpenConns(maxConnPool)
-	//sqlDb.SetMaxIdleConns(maxIdleConns)
+	db.SetMaxOpenConns(maxConnPool)
+	db.SetMaxIdleConns(maxIdleConns)
+	drv := entsql.OpenDB("mysql", db)
+	client := ent.NewClient(ent.Driver(drv))
+	Client = client
+	return client
 
 	// Run the auto migration tool.
-	if err := client.Schema.Create(context.Background()); err != nil {
-		log.Fatalf("failed creating schema resources: %v", err)
-	}
-	return client
+	//if err := client.Schema.Create(context.Background()); err != nil {
+	//	log.Fatalf("failed creating schema resources: %v", err)
+	//}
+	//return client
 }

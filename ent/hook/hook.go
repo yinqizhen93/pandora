@@ -3,33 +3,20 @@
 package hook
 
 import (
-	"pandora/ent"
 	"context"
 	"fmt"
+	"pandora/ent"
 )
 
-// The CarFunc type is an adapter to allow the use of ordinary
-// function as Car mutator.
-type CarFunc func(context.Context, *ent.CarMutation) (ent.Value, error)
+// The StockFunc type is an adapter to allow the use of ordinary
+// function as Stock mutator.
+type StockFunc func(context.Context, *ent.StockMutation) (ent.Value, error)
 
 // Mutate calls f(ctx, m).
-func (f CarFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
-	mv, ok := m.(*ent.CarMutation)
+func (f StockFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	mv, ok := m.(*ent.StockMutation)
 	if !ok {
-		return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.CarMutation", m)
-	}
-	return f(ctx, mv)
-}
-
-// The GroupFunc type is an adapter to allow the use of ordinary
-// function as Group mutator.
-type GroupFunc func(context.Context, *ent.GroupMutation) (ent.Value, error)
-
-// Mutate calls f(ctx, m).
-func (f GroupFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
-	mv, ok := m.(*ent.GroupMutation)
-	if !ok {
-		return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.GroupMutation", m)
+		return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.StockMutation", m)
 	}
 	return f(ctx, mv)
 }

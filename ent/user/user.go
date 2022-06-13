@@ -2,47 +2,38 @@
 
 package user
 
+import (
+	"time"
+)
+
 const (
 	// Label holds the string label denoting the user type in the database.
 	Label = "user"
 	// FieldID holds the string denoting the id field in the database.
 	FieldID = "id"
-	// FieldAge holds the string denoting the age field in the database.
-	FieldAge = "age"
-	// FieldName holds the string denoting the name field in the database.
-	FieldName = "name"
-	// EdgeCars holds the string denoting the cars edge name in mutations.
-	EdgeCars = "cars"
-	// EdgeGroups holds the string denoting the groups edge name in mutations.
-	EdgeGroups = "groups"
+	// FieldUsername holds the string denoting the username field in the database.
+	FieldUsername = "username"
+	// FieldPassword holds the string denoting the password field in the database.
+	FieldPassword = "password"
+	// FieldEmail holds the string denoting the email field in the database.
+	FieldEmail = "email"
+	// FieldCreatedAt holds the string denoting the createdat field in the database.
+	FieldCreatedAt = "created_at"
+	// FieldUpdatedAt holds the string denoting the updatedat field in the database.
+	FieldUpdatedAt = "updated_at"
 	// Table holds the table name of the user in the database.
 	Table = "users"
-	// CarsTable is the table that holds the cars relation/edge.
-	CarsTable = "cars"
-	// CarsInverseTable is the table name for the Car entity.
-	// It exists in this package in order to avoid circular dependency with the "car" package.
-	CarsInverseTable = "cars"
-	// CarsColumn is the table column denoting the cars relation/edge.
-	CarsColumn = "user_cars"
-	// GroupsTable is the table that holds the groups relation/edge. The primary key declared below.
-	GroupsTable = "group_users"
-	// GroupsInverseTable is the table name for the Group entity.
-	// It exists in this package in order to avoid circular dependency with the "group" package.
-	GroupsInverseTable = "groups"
 )
 
 // Columns holds all SQL columns for user fields.
 var Columns = []string{
 	FieldID,
-	FieldAge,
-	FieldName,
+	FieldUsername,
+	FieldPassword,
+	FieldEmail,
+	FieldCreatedAt,
+	FieldUpdatedAt,
 }
-
-var (
-	// GroupsPrimaryKey and GroupsColumn2 are the table columns denoting the
-	// primary key for the groups relation (M2M).
-	GroupsPrimaryKey = []string{"group_id", "user_id"}
-)
 
 // ValidColumn reports if the column name is valid (part of the table columns).
 func ValidColumn(column string) bool {
@@ -55,8 +46,10 @@ func ValidColumn(column string) bool {
 }
 
 var (
-	// AgeValidator is a validator for the "age" field. It is called by the builders before save.
-	AgeValidator func(int) error
-	// DefaultName holds the default value on creation for the "name" field.
-	DefaultName string
+	// DefaultCreatedAt holds the default value on creation for the "createdAt" field.
+	DefaultCreatedAt func() time.Time
+	// DefaultUpdatedAt holds the default value on creation for the "updatedAt" field.
+	DefaultUpdatedAt func() time.Time
+	// UpdateDefaultUpdatedAt holds the default value on update for the "updatedAt" field.
+	UpdateDefaultUpdatedAt func() time.Time
 )

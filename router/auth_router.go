@@ -25,12 +25,12 @@ func initAuthRouter() {
 			user.DELETE("/:id", auth.DeleteUser)
 		}
 
-		role := r.Group("/roles")
-		{
-			role.GET("/", auth.GetRole)
-			role.POST("/", auth.CreateRole)
-			role.PUT("/:id", auth.UpdateRole)
-			role.DELETE("/:id", auth.DeleteRole)
-		}
+		//role := r.Group("/roles")
+		//{
+		//	role.GET("/", auth.GetRole)
+		//	role.POST("/", auth.CreateRole)
+		//	role.PUT("/:id", auth.UpdateRole)
+		//	role.DELETE("/:id", auth.DeleteRole)
+		//}
 	}
 }

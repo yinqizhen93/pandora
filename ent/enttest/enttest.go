@@ -3,8 +3,8 @@
 package enttest
 
 import (
-	"pandora/ent"
 	"context"
+	"pandora/ent"
 	// required by schema hooks.
 	_ "pandora/ent/runtime"
 

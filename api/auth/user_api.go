@@ -1,34 +1,44 @@
 package auth
 
 import (
+	"context"
+	"entgo.io/ent/dialect/sql/sqlgraph"
 	"fmt"
 	"github.com/gin-gonic/gin"
+	"pandora/api"
 	"pandora/db"
+	"pandora/ent/user"
 	"pandora/logs"
-	"pandora/models"
 	"pandora/service"
+	"pandora/utils"
 	"runtime/debug"
+	"strconv"
 )
 
 func GetUser(c *gin.Context) {
-	var users []models.User
-	db.DB.First(&users)
+	ctx := context.Background()
+	cols := []string{"id", "username", "email"}
+	users, err := db.Client.User.Query().Select(cols...).All(ctx)
+	if err != nil {
+		c.JSON(200, utils.FailResponse(2002, "获取用户失败"))
+	}
 	fmt.Println(users)
-	//fmt.Println(result)
 	c.JSON(200, users)
 }
 
 func GetCurrentUser(c *gin.Context) {
-	var users []models.User
+	//var users ent.Users
+	ctx := context.Background()
 	curUserId, ok := c.Get("userId")
 	if !ok {
-		c.JSON(200, gin.H{
-			"success": false,
-			"errCode": 2004,
-			"errMsg":  "user 不存在",
-		})
+		c.JSON(200, utils.FailResponse(2005, "用户不存在"))
 	}
-	db.DB.Where("id = ?", curUserId).First(&users)
+	users, err := db.Client.User.Query().Where(user.IDEQ(curUserId.(int))).Select().All(ctx)
+	if err != nil {
+		logs.Logger.Error(fmt.Sprintf("获取用户失败：%s; \n %s", err, debug.Stack()))
+		c.JSON(200, utils.FailResponse(2006, "获取用户失败"))
+	}
+	//db.DB.Where("id = ?", curUserId).First(&users)
 	fmt.Println(users)
 	//fmt.Println(result)
 	c.JSON(200, gin.H{
@@ -44,62 +54,67 @@ type UserRequest struct {
 }
 
 func CreateUser(c *gin.Context) {
-	var u UserRequest
-	if err := c.Bind(&u); err != nil {
-		panic(err)
+	var ur UserRequest
+	if err := c.Bind(&ur); err != nil {
+		logs.Logger.Error(fmt.Sprintf("请求参数解析失败：%s; \n %s", err, debug.Stack()))
+		c.JSON(200, utils.FailResponse(1001, "请求参数解析失败"))
 	}
 
-	if err := service.Valid.Struct(u); err != nil {
+	if err := service.Valid.Struct(ur); err != nil {
 		logs.Logger.Error(fmt.Sprintf("请求参数有错误：%s; \n %s", err, debug.Stack()))
-		c.JSON(200, gin.H{
-			"success": false,
-			"code":    101,
-			"msg":     "请求参数有错误",
-		})
+		c.JSON(200, utils.FailResponse(1001, "请求参数错误"))
 		return
 	}
-
-	user := models.User{UserName: u.Username, Password: u.Password, Email: u.Email}
-	rst := db.DB.Create(&user)
-	if rst.Error != nil {
-		logs.Logger.Error(fmt.Sprintf("插入数据错误:%s; %s", rst.Error, string(debug.Stack())))
-		c.JSON(200, gin.H{
-			"success": false,
-			"code":    104,
-			"msg":     "插入数据错误",
-		})
+	ctx := context.Background()
+	u, err := db.Client.User.Create().
+		SetUsername(ur.Username).
+		SetPassword(ur.Password).
+		SetEmail(ur.Email).
+		Save(ctx)
+	if err != nil {
+		logs.Logger.Error(fmt.Sprintf("创建用户失败:%s; %s", err, string(debug.Stack())))
+		errMsg := "添加失败"
+		if sqlgraph.IsUniqueConstraintError(err) {
+			errMsg = "存在重复"
+		}
+		c.JSON(200, utils.FailResponse(1002, errMsg))
 		return
 	}
 	c.JSON(200, gin.H{
 		"success": true,
 		"msg":     "添加成功",
+		"id":      u.ID,
 	})
 }
 
 func UpdateUser(c *gin.Context) {
-	var user models.User
-	id := c.Param("id")
-	email := c.PostForm("email")
-	rst := db.DB.First(&user, id)
-
-	if rst.Error != nil {
-		logs.Logger.Error(fmt.Sprintf("%s; %s", rst.Error, debug.Stack()))
-		c.JSON(200, gin.H{
-			"success": false,
-			"code":    111,
-			"msg":     "更新失败",
-		})
+	strId := c.Param("id")
+	intId, err := strconv.Atoi(strId)
+	if err != nil {
+		c.JSON(200, utils.FailResponse(1002, "参数错误"))
+		logs.Logger.Error(fmt.Sprintf("参数错误:%s; %s", err, string(debug.Stack())))
 		return
 	}
-
-	user.Email = email
-	if rst := db.DB.Save(&user); rst.Error != nil {
-		logs.Logger.Error(fmt.Sprintf("保存数据库失败:%s; %s", rst.Error, debug.Stack()))
-		c.JSON(200, gin.H{
-			"success": false,
-			"code":    111,
-			"msg":     "更新失败",
-		})
+	ur, err := api.ParseJsonFormInputMap(c)
+	fmt.Println("ur", ur)
+	if err != nil {
+		logs.Logger.Error(fmt.Sprintf("请求参数解析失败：%s; \n %s", err, debug.Stack()))
+		c.JSON(200, utils.FailResponse(1001, "请求参数解析失败"))
+		return
+	}
+	upd := db.Client.User.UpdateOneID(intId)
+	if username, ok := ur["username"]; ok {
+		upd.SetUsername(username.(string))
+	}
+	if password, ok := ur["password"]; ok {
+		upd.SetUsername(password.(string))
+	}
+	if email, ok := ur["email"]; ok {
+		upd.SetUsername(email.(string))
+	}
+	if _, err := upd.Save(context.Background()); err != nil {
+		logs.Logger.Error(fmt.Sprintf("更新保存失败：%s; \n %s", err, debug.Stack()))
+		c.JSON(200, utils.FailResponse(1005, "更新保存失败"))
 		return
 	}
 	c.JSON(200, gin.H{
@@ -110,27 +125,16 @@ func UpdateUser(c *gin.Context) {
 }
 
 func DeleteUser(c *gin.Context) {
-	var user models.User
-	id := c.Param("id")
-	rst := db.DB.First(&user, id)
-
-	if rst.Error != nil {
-		logs.Logger.Error(fmt.Sprintf("%s; %s", rst.Error, debug.Stack()))
-		c.JSON(200, gin.H{
-			"success": false,
-			"code":    111,
-			"msg":     "删除失败",
-		})
+	strId := c.Param("id")
+	intId, err := strconv.Atoi(strId)
+	if err != nil {
+		c.JSON(200, utils.FailResponse(1002, "参数错误"))
+		logs.Logger.Error(fmt.Sprintf("参数错误:%s; %s", err, string(debug.Stack())))
 		return
 	}
-
-	if rst := db.DB.Delete(&user); rst.Error != nil {
-		logs.Logger.Error(fmt.Sprintf("删除失败:%s; %s", rst.Error, debug.Stack()))
-		c.JSON(200, gin.H{
-			"success": false,
-			"code":    111,
-			"msg":     "删除失败",
-		})
+	if err := db.Client.User.DeleteOneID(intId).Exec(context.Background()); err != nil {
+		c.JSON(200, utils.FailResponse(1002, "删除失败"))
+		logs.Logger.Error(fmt.Sprintf("删除失败:%s; %s", err, string(debug.Stack())))
 		return
 	}
 	c.JSON(200, gin.H{

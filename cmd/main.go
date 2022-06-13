@@ -19,7 +19,6 @@ func init() {
 	config.InitConfig()
 	logs.InitLogger()
 	db.InitDB()
-	db.InitDB2()
 	service.InitService()
 	router.InitRouter()
 }
