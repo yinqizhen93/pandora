@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"net/http"
+	"pandora/api"
 	"pandora/db"
 	"pandora/models"
-	"pandora/utils"
 )
 
 func GetStock(c *gin.Context) {
@@ -16,7 +16,7 @@ func GetStock(c *gin.Context) {
 	ctx := context.Background()
 	err := db.Client.Stock.Query().Select().Scan(ctx, data)
 	if err != nil {
-		c.JSON(http.StatusOK, utils.FailResponse(3002, "查询失败"))
+		c.JSON(http.StatusOK, api.FailResponse(3002, "查询失败"))
 	}
 	fmt.Println(data)
 	resp := gin.H{

@@ -6,11 +6,11 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/pkg/errors"
 	"net/http"
+	"pandora/api"
 	"pandora/db"
 	"pandora/ent/user"
 	"pandora/logs"
 	"pandora/service"
-	"pandora/utils"
 	"runtime/debug"
 )
 
@@ -24,7 +24,7 @@ func Login(c *gin.Context) {
 	var userInf UserInfo
 	err := c.ShouldBind(&userInf)
 	if err != nil {
-		c.JSON(http.StatusOK, utils.FailResponse(2001, "无效的参数"))
+		c.JSON(http.StatusOK, api.FailResponse(2001, "无效的参数"))
 		return
 	}
 	// 校验用户名和密码是否正确
@@ -34,7 +34,7 @@ func Login(c *gin.Context) {
 		if err != nil {
 			// todo 记录日志
 			logs.Logger.Error(fmt.Sprintf("获取用户失败：%s; \n %s", err, debug.Stack()))
-			c.JSON(http.StatusOK, utils.FailResponse(2009, "登录失败"))
+			c.JSON(http.StatusOK, api.FailResponse(2009, "登录失败"))
 			return
 		}
 		tokenString, err := service.CreateToken(userId)
@@ -47,7 +47,7 @@ func Login(c *gin.Context) {
 		})
 		return
 	}
-	c.JSON(http.StatusOK, utils.FailResponse(2002, "用户名或密码错误"))
+	c.JSON(http.StatusOK, api.FailResponse(2002, "用户名或密码错误"))
 	return
 }
 
