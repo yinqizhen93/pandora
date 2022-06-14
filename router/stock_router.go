@@ -1,17 +1,17 @@
 package router
 
 import (
-	"pandora/api/auth"
+	"pandora/api/stock"
 	"pandora/middleware"
 )
 
 func initStockRouter() {
 	//r.GET("/", api.LandingPage)
-	r := Router.Group("/stock")
-	r.Use(middleware.Authorize())
+	r := Router.Group("/stocks")
+	r.Use(middleware.JWTAuthMiddleware())
 	{
-		r.GET("/daily", auth.Login)
-		r.GET("/day", auth.Login)
+		r.GET("/daily", stock.GetStock)
+		r.POST("/daily/upload", stock.UploadStock)
 		//user := baseUrl.Group("/user")
 		//{
 		//	user.GET("/", api.GetUser)
