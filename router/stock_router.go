@@ -12,6 +12,7 @@ func initStockRouter() {
 	{
 		r.GET("/daily", stock.GetStock)
 		r.POST("/daily/upload", stock.UploadStock)
+		r.POST("/daily/download", stock.DownloadStock)
 		//user := baseUrl.Group("/user")
 		//{
 		//	user.GET("/", api.GetUser)

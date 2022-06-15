@@ -5,74 +5,66 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/xuri/excelize/v2"
-	"net/http"
 	"pandora/api"
 	"pandora/db"
 	"pandora/ent"
 	"pandora/ent/stock"
 	"pandora/logs"
+	"pandora/utils"
 	"runtime/debug"
 	"strconv"
 	"time"
 )
 
-//type UserQueryParams struct {
-//	Page      int    `json:"page" binding:"required"`
-//	PageSize  int    `json:"pageSize" binding:"required"`
-//	SearchVal string `json:"searchVal" binding:"required"`
-//	StartDate string `json:"startDate" binding:"required"`
-//	EndDate   string `json:"endDate" binding:"required"`
-//}
-
 func GetStock(c *gin.Context) {
 	//var req UserQueryParams
 	strPage, ok := c.GetQuery("page")
 	if !ok {
-		c.JSON(http.StatusOK, api.FailResponse(3002, "page参数缺失"))
+		c.JSON(200, api.FailResponse(3002, "page参数缺失"))
 		return
 	}
 	page, err := strconv.Atoi(strPage)
 	if err != nil {
-		c.JSON(http.StatusOK, api.FailResponse(3002, "page参数错误"))
+		c.JSON(200, api.FailResponse(3002, "page参数错误"))
 		return
 	}
 
 	strPageSize, ok := c.GetQuery("pageSize")
 	if !ok {
-		c.JSON(http.StatusOK, api.FailResponse(3002, "pageSize参数缺失"))
+		c.JSON(200, api.FailResponse(3002, "pageSize参数缺失"))
 		return
 	}
 	pageSize, err := strconv.Atoi(strPageSize)
 	if err != nil {
-		c.JSON(http.StatusOK, api.FailResponse(3002, "pageSize参数错误"))
+		c.JSON(200, api.FailResponse(3002, "pageSize参数错误"))
 		return
 	}
 
 	searchVal, ok := c.GetQuery("searchVal")
 	if !ok {
-		c.JSON(http.StatusOK, api.FailResponse(3002, "searchVal参数缺失"))
+		c.JSON(200, api.FailResponse(3002, "searchVal参数缺失"))
 		return
 	}
 
 	strStartDate, ok := c.GetQuery("startDate")
 	if !ok {
-		c.JSON(http.StatusOK, api.FailResponse(3002, "startDate参数缺失"))
+		c.JSON(200, api.FailResponse(3002, "startDate参数缺失"))
 		return
 	}
 	startDate, err := time.Parse("2006-01-02", strStartDate)
 	if !ok {
-		c.JSON(http.StatusOK, api.FailResponse(3002, "searchVal参数缺失"))
+		c.JSON(200, api.FailResponse(3002, "searchVal参数缺失"))
 		return
 	}
 
 	strEndDate, ok := c.GetQuery("endDate")
 	if !ok {
-		c.JSON(http.StatusOK, api.FailResponse(3002, "endDate参数缺失"))
+		c.JSON(200, api.FailResponse(3002, "endDate参数缺失"))
 		return
 	}
 	endDate, err := time.Parse("2006-01-02", strEndDate)
 	if !ok {
-		c.JSON(http.StatusOK, api.FailResponse(3002, "searchVal参数缺失"))
+		c.JSON(200, api.FailResponse(3002, "searchVal参数缺失"))
 		return
 	}
 
@@ -92,17 +84,17 @@ func GetStock(c *gin.Context) {
 	total, err := stockQuery.Count(ctx)
 	if err != nil {
 		logs.Logger.Error(fmt.Sprintf("查询失败：%s; \n %s", err, debug.Stack()))
-		c.JSON(http.StatusOK, api.FailResponse(3002, "查询失败"))
+		c.JSON(200, api.FailResponse(3002, "查询失败"))
 		return
 	}
 	stocks, err := stockQuery.Offset(offset).Limit(pageSize).Select().All(ctx)
 	if err != nil {
 		logs.Logger.Error(fmt.Sprintf("查询失败：%s; \n %s", err, debug.Stack()))
-		c.JSON(http.StatusOK, api.FailResponse(3002, "查询失败"))
+		c.JSON(200, api.FailResponse(3002, "查询失败"))
 		return
 	}
 
-	fmt.Println(stocks)
+	//fmt.Println(stocks)
 	resp := gin.H{
 		"code":  "success",
 		"data":  stocks,
@@ -114,17 +106,17 @@ func GetStock(c *gin.Context) {
 func UploadStock(c *gin.Context) {
 	formFile, err := c.FormFile("file")
 	if err != nil {
-		c.JSON(http.StatusOK, api.FailResponse(3004, "参数错误"))
+		c.JSON(200, api.FailResponse(3004, "参数错误"))
 		return
 	}
 	file, err := formFile.Open()
 	if err != nil {
-		c.JSON(http.StatusOK, api.FailResponse(3004, "打开上传文件失败"))
+		c.JSON(200, api.FailResponse(3004, "打开上传文件失败"))
 		return
 	}
 	f, err := excelize.OpenReader(file)
 	if err != nil {
-		c.JSON(http.StatusOK, api.FailResponse(3004, "读取上传文件失败"))
+		c.JSON(200, api.FailResponse(3004, "读取上传文件失败"))
 		return
 	}
 	go func() {
@@ -200,4 +192,125 @@ func strToInt32(val string) int32 {
 		panic(err)
 	}
 	return int32(v)
+}
+
+type UserDownloadParams struct {
+	SearchVal string `json:"searchVal"`
+	StartDate string `json:"startDate" binding:"required"`
+	EndDate   string `json:"endDate" binding:"required"`
+}
+
+func DownloadStock(c *gin.Context) {
+	var udp UserDownloadParams
+	err := c.Bind(&udp)
+	if err != nil {
+		logs.Logger.Error(fmt.Sprintf("参数错误：%s; \n %s", err, debug.Stack()))
+		c.JSON(200, api.FailResponse(3002, "参数错误"))
+		return
+	}
+	startDate, err := time.Parse("2006-01-02", udp.StartDate)
+	if err != nil {
+		c.JSON(200, api.FailResponse(3002, "startDate参数错误"))
+		return
+	}
+	endDate, err := time.Parse("2006-01-02", udp.EndDate)
+	if err != nil {
+		c.JSON(200, api.FailResponse(3002, "endDate参数错误"))
+		return
+	}
+
+	stockQuery := db.Client.Stock.Query().Where(stock.And(
+		stock.DateGTE(startDate),
+		stock.DateLTE(endDate),
+	))
+	if udp.SearchVal != "" {
+		stockQuery = stockQuery.Where(
+			stock.Or(
+				stock.CodeContains(udp.SearchVal),
+				stock.NameContains(udp.SearchVal),
+			))
+	}
+	ctx := context.Background()
+	stocks, err := stockQuery.Select().All(ctx)
+	if err != nil {
+		c.JSON(200, api.FailResponse(3002, "查询数据失败"))
+	}
+	stks := make([]any, len(stocks))
+	for i, s := range stocks {
+		stks[i] = s
+	}
+	file := excelize.NewFile()
+	tableHeader := []utils.TableHeader{
+		{
+			"ID",
+			"ID",
+		},
+		{
+			"Market",
+			"市场",
+		},
+		{
+			"Code",
+			"股票代码",
+		},
+		{
+			"Name",
+			"股票简称",
+		},
+		{
+			"Date",
+			"日期",
+		},
+		{
+			"Open",
+			"开盘价",
+		},
+		{
+			"Close",
+			"收盘价",
+		},
+		{
+			"High",
+			"最高价",
+		},
+		{
+			"Low",
+			"最低价",
+		},
+		{
+			"Volume",
+			"成交量",
+		},
+		{
+			"OutstandingShare",
+			"流通量",
+		},
+		{
+			"Turnover",
+			"换手率",
+		},
+	}
+	if xs, err := utils.NewXlsxStorage(file, tableHeader, stks); err != nil {
+		logs.Logger.Error(fmt.Sprintf("生成XlsxStorage失败：%+v; \n %s", err, debug.Stack()))
+		c.JSON(200, api.FailResponse(3002, "生成XlsxStorage失败"))
+		return
+	} else {
+		if err := xs.WriteXlsx(); err != nil {
+			logs.Logger.Error(fmt.Sprintf("生成XlsxStorage失败：%+v; \n %s", err, debug.Stack()))
+			c.JSON(200, api.FailResponse(3002, "生成XlsxStorage失败"))
+			return
+		}
+	}
+	//streamWriter, err := file.NewStreamWriter("Sheet1")
+	//if err != nil {
+	//	c.JSON(200, api.FailResponse(3002, "生成Excel失败"))
+	//}
+	//buff, err := file.WriteToBuffer()
+	fileName := "stock.xlsx"
+	c.Header("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+	c.Header("Content-Disposition", fmt.Sprintf(`attachment; filename="%s"`, fileName))
+	c.Header("response-type", "blob")
+	file.Write(c.Writer)
+	//c.Writer.Write(buff.Bytes())
+	//c.Data(http.StatusOK, contentType, buff.Bytes())
 }
