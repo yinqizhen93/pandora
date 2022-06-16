@@ -4,6 +4,7 @@ package ent
 
 import (
 	"pandora/ent/schema"
+	"pandora/ent/task"
 	"pandora/ent/user"
 	"time"
 )
@@ -12,6 +13,12 @@ import (
 // (default values, validators, hooks and policies) and stitches it
 // to their package variables.
 func init() {
+	taskFields := schema.Task{}.Fields()
+	_ = taskFields
+	// taskDescCreatedAt is the schema descriptor for createdAt field.
+	taskDescCreatedAt := taskFields[7].Descriptor()
+	// task.DefaultCreatedAt holds the default value on creation for the createdAt field.
+	task.DefaultCreatedAt = taskDescCreatedAt.Default.(func() time.Time)
 	userFields := schema.User{}.Fields()
 	_ = userFields
 	// userDescCreatedAt is the schema descriptor for createdAt field.

@@ -29,6 +29,25 @@ var (
 		Columns:    StocksColumns,
 		PrimaryKey: []*schema.Column{StocksColumns[0]},
 	}
+	// TasksColumns holds the columns for the "tasks" table.
+	TasksColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "name", Type: field.TypeString},
+		{Name: "type", Type: field.TypeEnum, Enums: []string{"once", "periodical"}},
+		{Name: "describe", Type: field.TypeString, Size: 2147483647},
+		{Name: "start_date", Type: field.TypeTime},
+		{Name: "end_date", Type: field.TypeTime, Nullable: true},
+		{Name: "cost_time", Type: field.TypeInt, Nullable: true},
+		{Name: "status", Type: field.TypeInt8},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "created_by", Type: field.TypeInt},
+	}
+	// TasksTable holds the schema information for the "tasks" table.
+	TasksTable = &schema.Table{
+		Name:       "tasks",
+		Columns:    TasksColumns,
+		PrimaryKey: []*schema.Column{TasksColumns[0]},
+	}
 	// UsersColumns holds the columns for the "users" table.
 	UsersColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
@@ -47,6 +66,7 @@ var (
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{
 		StocksTable,
+		TasksTable,
 		UsersTable,
 	}
 )

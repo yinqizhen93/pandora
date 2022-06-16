@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"pandora/ent/stock"
+	"pandora/ent/task"
 	"pandora/ent/user"
 
 	"entgo.io/ent"
@@ -31,6 +32,7 @@ type OrderFunc func(*sql.Selector)
 func columnChecker(table string) func(string) error {
 	checks := map[string]func(string) bool{
 		stock.Table: stock.ValidColumn,
+		task.Table:  task.ValidColumn,
 		user.Table:  user.ValidColumn,
 	}
 	check, ok := checks[table]
