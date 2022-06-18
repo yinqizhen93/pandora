@@ -63,7 +63,7 @@ func addTaskRouter() {
 }
 
 func addSSERouter() {
-	r := Router.Group("/sse", middleware.JWTAuth(), service.Stream.SSEHandler()) // JWTAuth授权
+	r := Router.Group("/sse", middleware.JWTAuth(), service.Stream.SSEHandler(), middleware.SSEHeaderMiddleware()) // JWTAuth授权
 	{
 		r.GET("/task", task.StartTaskSSE)
 	}

@@ -9,6 +9,7 @@ import (
 	"pandora/db"
 	"pandora/ent/task"
 	"pandora/logs"
+	"pandora/service"
 	"runtime/debug"
 	"strconv"
 	"time"
@@ -79,16 +80,6 @@ func GetTask(c *gin.Context) {
 }
 
 func StartTaskSSE(c *gin.Context) {
-	//c.Header("Content-Type", "text/event-stream")
-	//c.Header("Cache-Control", "no-cache")
-	//c.Header("Connection", "keep-alive")
-	//c.Header("Transfer-Encoding", "chunked")
-	c.Header("Access-Control-Allow-Origin", "http://127.0.0.1:8000")
-	c.Header("Access-Control-Allow-Credentials", "true")
-	c.Header("Access-Control-Allow-Headers", "Authorization")
-	c.Header("Access-Control-Allow-Methods", "GET")
-
-	stream := make(chan string)
 	go func() {
 		for {
 			time.Sleep(time.Second * 1)
@@ -96,13 +87,17 @@ func StartTaskSSE(c *gin.Context) {
 			currentTime := fmt.Sprintf("The Current Time Is %v", now)
 
 			// Send current time to clients message channel
-			stream <- currentTime
+			service.Stream.Message <- currentTime
 		}
 	}()
 
+	cliStream, ok := c.Get(service.SSEClient)
+	if !ok {
+		panic("no sseClient find")
+	}
 	c.Stream(func(w io.Writer) bool {
 		// Stream message to client from message channel
-		if msg, ok := <-stream; ok {
+		if msg, ok := <-cliStream.(service.ClientChan); ok {
 			fmt.Println(msg)
 			c.SSEvent("message", msg)
 			return true
