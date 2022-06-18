@@ -15,7 +15,7 @@ type Claims struct {
 	jwt.StandardClaims
 }
 
-const TokenExpireDuration = time.Hour * 2
+const TokenExpireDuration = time.Hour * 8
 
 var Secret = []byte("夏天夏天悄悄过去")
 

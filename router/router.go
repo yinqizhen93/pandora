@@ -6,6 +6,7 @@ import (
 	"pandora/api/stock"
 	"pandora/api/task"
 	"pandora/middleware"
+	"pandora/service"
 )
 
 var Router = gin.Default()
@@ -62,7 +63,7 @@ func addTaskRouter() {
 }
 
 func addSSERouter() {
-	r := Router.Group("/sse") // 去掉授权
+	r := Router.Group("/sse", middleware.JWTAuth(), service.Stream.SSEHandler()) // JWTAuth授权
 	{
 		r.GET("/task", task.StartTaskSSE)
 	}

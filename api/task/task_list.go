@@ -9,7 +9,6 @@ import (
 	"pandora/db"
 	"pandora/ent/task"
 	"pandora/logs"
-	"pandora/middleware"
 	"runtime/debug"
 	"strconv"
 	"time"
@@ -84,9 +83,6 @@ func StartTaskSSE(c *gin.Context) {
 	//c.Header("Cache-Control", "no-cache")
 	//c.Header("Connection", "keep-alive")
 	//c.Header("Transfer-Encoding", "chunked")
-	if ok := middleware.JwtAuth(c); !ok {
-		return
-	}
 	c.Header("Access-Control-Allow-Origin", "http://127.0.0.1:8000")
 	c.Header("Access-Control-Allow-Credentials", "true")
 	c.Header("Access-Control-Allow-Headers", "Authorization")
