@@ -2,6 +2,10 @@ package router
 
 import (
 	"github.com/gin-gonic/gin"
+	"pandora/api/auth"
+	"pandora/api/stock"
+	"pandora/api/task"
+	"pandora/middleware"
 )
 
 var Router = gin.Default()
@@ -9,19 +13,50 @@ var Router = gin.Default()
 //var Router = gin.New()
 
 func InitRouter() {
-	initAuthRouter()
-	initStockRouter()
-	initDoctorRouter()
-	initDepartmentRouter()
-	initLoginRouter()
-	initTaskRouter()
-	//err := r.Run(":8080")// listen and serve on 0.0.0.0:8080
-	//if err != nil {
-	//	return
-	//}
+	addLoginRouter()
+	addAuthRouter()
+	addStockRouter()
+	addTaskRouter()
 }
 
-func init() {
-	// 使用自定义logger 和 recovery
-	//Router.Use(middleware.GinLogger(logs.Logger), middleware.GinRecovery(logs.Logger, true))
+func addLoginRouter() {
+	Router.POST("/login", auth.Login)
+}
+
+func addAuthRouter() {
+	r := Router.Group("/auth", middleware.JWTAuthMiddleware())
+	{
+		r.GET("/currentUser", auth.GetCurrentUser)
+		//r.POST("/login", auth.Login)
+		// 重定向
+		r.POST("/regist", func(c *gin.Context) {
+			c.Request.URL.Path = "/auth/users"
+			Router.HandleContext(c)
+		})
+		user := r.Group("/users")
+		{
+			user.GET("/", auth.GetUser)
+			user.POST("/", auth.CreateUser)
+			user.PUT("/:id", auth.UpdateUser)
+			user.DELETE("/:id", auth.DeleteUser)
+		}
+	}
+}
+
+func addStockRouter() {
+	r := Router.Group("/stocks", middleware.JWTAuthMiddleware())
+	{
+		r.GET("/daily", stock.GetStock)
+		r.POST("/daily/upload", stock.UploadStock)
+		r.POST("/daily/download", stock.DownloadStock)
+	}
+}
+
+func addTaskRouter() {
+	r := Router.Group("/tasks", middleware.JWTAuthMiddleware())
+	{
+		r.GET("/list", task.GetTask)
+		r.POST("/once", task.UploadStockOnce)
+		r.GET("/sse", task.SSE)
+	}
 }

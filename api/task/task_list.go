@@ -4,12 +4,14 @@ import (
 	"context"
 	"fmt"
 	"github.com/gin-gonic/gin"
+	"io"
 	"pandora/api"
 	"pandora/db"
 	"pandora/ent/task"
 	"pandora/logs"
 	"runtime/debug"
 	"strconv"
+	"time"
 )
 
 func GetTask(c *gin.Context) {
@@ -74,4 +76,37 @@ func GetTask(c *gin.Context) {
 		"total": total,
 	}
 	c.JSON(200, resp)
+}
+
+func SSE(c *gin.Context) {
+	//c.Header("Content-Type", "text/event-stream")
+	//c.Header("Cache-Control", "no-cache")
+	//c.Header("Connection", "keep-alive")
+	//c.Header("Transfer-Encoding", "chunked")
+	c.Header("Access-Control-Allow-Origin", "http://127.0.0.1:8000")
+	c.Header("Access-Control-Allow-Credentials", "true")
+	c.Header("Access-Control-Allow-Headers", "Authorization")
+	c.Header("Access-Control-Allow-Methods", "GET")
+
+	stream := make(chan string)
+	go func() {
+		for {
+			time.Sleep(time.Second * 1)
+			now := time.Now().Format("2006-01-02 15:04:05")
+			currentTime := fmt.Sprintf("The Current Time Is %v", now)
+
+			// Send current time to clients message channel
+			stream <- currentTime
+		}
+	}()
+
+	c.Stream(func(w io.Writer) bool {
+		// Stream message to client from message channel
+		if msg, ok := <-stream; ok {
+			fmt.Println(msg)
+			c.SSEvent("message", msg)
+			return true
+		}
+		return false
+	})
 }

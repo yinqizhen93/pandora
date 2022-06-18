@@ -22,28 +22,3 @@ func init() {
 	service.InitService()
 	router.InitRouter()
 }
-
-//func main() {
-//	config.InitConfig()
-//	dbc := db.InitDB2()
-//	ctx := context.Background()
-//	//user, _ := CreateCars(ctx, dbc)
-//	//fmt.Println(user)
-//	//err := QueryCars(ctx, user)
-//	//if err := CreateGraph(ctx, dbc); err != nil {
-//	//	panic(err)
-//	//}
-//
-//	if err := QueryGithub(ctx, dbc); err != nil {
-//		panic(err)
-//	}
-//
-//	if err := QueryArielCars(ctx, dbc); err != nil {
-//		panic(err)
-//	}
-//
-//	if err := QueryGroupWithUsers(ctx, dbc); err != nil {
-//		panic(err)
-//	}
-//
-//}
