@@ -55,3 +55,34 @@ func JWTAuthMiddleware() gin.HandlerFunc {
 		c.Next() // 后续的处理函数可以用过c.Get("username")来获取当前请求的用户信息
 	}
 }
+
+func JwtAuth(c *gin.Context) bool {
+	authInfo := c.Query("token")
+	if authInfo == "" {
+		c.AbortWithStatusJSON(401, gin.H{
+			"msg": "未授权的请求",
+		})
+		return false
+	}
+	// 按空格分割
+	parts := strings.SplitN(authInfo, " ", 2)
+	if !(len(parts) == 2 && parts[0] == "Bearer") {
+
+		c.AbortWithStatusJSON(401, gin.H{
+			"msg": "token格式有误",
+		})
+		return false
+	}
+	// parts[1]是获取到的tokenString，我们使用之前定义好的解析JWT的函数来解析它
+	_, err := service.ParseToken(parts[1])
+	if err != nil {
+		log.Println(err)
+		c.AbortWithStatusJSON(401, gin.H{
+			"msg": "无效的Token",
+		})
+		return false
+	}
+	// 将当前请求的userId信息保存到请求的上下文c上
+	//c.Set("userId", mc.UserId)
+	return true
+}

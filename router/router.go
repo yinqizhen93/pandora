@@ -17,6 +17,7 @@ func InitRouter() {
 	addAuthRouter()
 	addStockRouter()
 	addTaskRouter()
+	addSSERouter()
 }
 
 func addLoginRouter() {
@@ -57,6 +58,12 @@ func addTaskRouter() {
 	{
 		r.GET("/list", task.GetTask)
 		r.POST("/once", task.UploadStockOnce)
-		r.GET("/sse", task.SSE)
+	}
+}
+
+func addSSERouter() {
+	r := Router.Group("/sse") // 去掉授权
+	{
+		r.GET("/task", task.StartTaskSSE)
 	}
 }
