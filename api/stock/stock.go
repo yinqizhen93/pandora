@@ -9,7 +9,7 @@ import (
 	"pandora/db"
 	"pandora/ent"
 	"pandora/ent/stock"
-	"pandora/logs"
+	"pandora/service"
 	"pandora/utils"
 	"runtime/debug"
 	"strconv"
@@ -83,13 +83,13 @@ func GetStock(c *gin.Context) {
 	}
 	total, err := stockQuery.Count(ctx)
 	if err != nil {
-		logs.Logger.Error(fmt.Sprintf("查询失败：%s; \n %s", err, debug.Stack()))
+		service.Logger.Error(fmt.Sprintf("查询失败：%s; \n %s", err, debug.Stack()))
 		c.JSON(200, api.FailResponse(3002, "查询失败"))
 		return
 	}
 	stocks, err := stockQuery.Offset(offset).Limit(pageSize).Select().All(ctx)
 	if err != nil {
-		logs.Logger.Error(fmt.Sprintf("查询失败：%s; \n %s", err, debug.Stack()))
+		service.Logger.Error(fmt.Sprintf("查询失败：%s; \n %s", err, debug.Stack()))
 		c.JSON(200, api.FailResponse(3002, "查询失败"))
 		return
 	}
@@ -157,7 +157,7 @@ func UploadStock(c *gin.Context) {
 		_, err = db.Client.Stock.CreateBulk(bulk...).Save(ctx)
 		if err != nil {
 			fmt.Println(err)
-			logs.Logger.Error(fmt.Sprintf("插入数据失败: %s", err))
+			service.Logger.Error(fmt.Sprintf("插入数据失败: %s", err))
 		}
 	}()
 
@@ -204,7 +204,7 @@ func DownloadStock(c *gin.Context) {
 	var udp UserDownloadParams
 	err := c.Bind(&udp)
 	if err != nil {
-		logs.Logger.Error(fmt.Sprintf("参数错误：%s; \n %s", err, debug.Stack()))
+		service.Logger.Error(fmt.Sprintf("参数错误：%s; \n %s", err, debug.Stack()))
 		c.JSON(200, api.FailResponse(3002, "参数错误"))
 		return
 	}
@@ -291,12 +291,12 @@ func DownloadStock(c *gin.Context) {
 		},
 	}
 	if xs, err := utils.NewXlsxStorage(file, tableHeader, stks); err != nil {
-		logs.Logger.Error(fmt.Sprintf("生成XlsxStorage失败：%+v; \n %s", err, debug.Stack()))
+		service.Logger.Error(fmt.Sprintf("生成XlsxStorage失败：%+v; \n %s", err, debug.Stack()))
 		c.JSON(200, api.FailResponse(3002, "生成XlsxStorage失败"))
 		return
 	} else {
 		if err := xs.WriteXlsx(); err != nil {
-			logs.Logger.Error(fmt.Sprintf("生成XlsxStorage失败：%+v; \n %s", err, debug.Stack()))
+			service.Logger.Error(fmt.Sprintf("生成XlsxStorage失败：%+v; \n %s", err, debug.Stack()))
 			c.JSON(200, api.FailResponse(3002, "生成XlsxStorage失败"))
 			return
 		}

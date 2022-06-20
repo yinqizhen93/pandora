@@ -8,7 +8,6 @@ import (
 	"pandora/api"
 	"pandora/db"
 	"pandora/ent/user"
-	"pandora/logs"
 	"pandora/service"
 	"runtime/debug"
 	"strconv"
@@ -34,7 +33,7 @@ func GetCurrentUser(c *gin.Context) {
 	}
 	users, err := db.Client.User.Query().Where(user.IDEQ(curUserId.(int))).Select().All(ctx)
 	if err != nil {
-		logs.Logger.Error(fmt.Sprintf("获取用户失败：%s; \n %s", err, debug.Stack()))
+		service.Logger.Error(fmt.Sprintf("获取用户失败：%s; \n %s", err, debug.Stack()))
 		c.JSON(200, api.FailResponse(2006, "获取用户失败"))
 	}
 	//db.DB.Where("id = ?", curUserId).First(&users)
@@ -55,12 +54,12 @@ type UserRequest struct {
 func CreateUser(c *gin.Context) {
 	var ur UserRequest
 	if err := c.Bind(&ur); err != nil {
-		logs.Logger.Error(fmt.Sprintf("请求参数解析失败：%s; \n %s", err, debug.Stack()))
+		service.Logger.Error(fmt.Sprintf("请求参数解析失败：%s; \n %s", err, debug.Stack()))
 		c.JSON(200, api.FailResponse(1001, "请求参数解析失败"))
 	}
 
 	if err := service.Valid.Struct(ur); err != nil {
-		logs.Logger.Error(fmt.Sprintf("请求参数有错误：%s; \n %s", err, debug.Stack()))
+		service.Logger.Error(fmt.Sprintf("请求参数有错误：%s; \n %s", err, debug.Stack()))
 		c.JSON(200, api.FailResponse(1001, "请求参数错误"))
 		return
 	}
@@ -71,7 +70,7 @@ func CreateUser(c *gin.Context) {
 		SetEmail(ur.Email).
 		Save(ctx)
 	if err != nil {
-		logs.Logger.Error(fmt.Sprintf("创建用户失败:%s; %s", err, string(debug.Stack())))
+		service.Logger.Error(fmt.Sprintf("创建用户失败:%s; %s", err, string(debug.Stack())))
 		errMsg := "添加失败"
 		if sqlgraph.IsUniqueConstraintError(err) {
 			errMsg = "存在重复"
@@ -91,13 +90,13 @@ func UpdateUser(c *gin.Context) {
 	intId, err := strconv.Atoi(strId)
 	if err != nil {
 		c.JSON(200, api.FailResponse(1002, "参数错误"))
-		logs.Logger.Error(fmt.Sprintf("参数错误:%s; %s", err, string(debug.Stack())))
+		service.Logger.Error(fmt.Sprintf("参数错误:%s; %s", err, string(debug.Stack())))
 		return
 	}
 	ur, err := api.ParseJsonFormInputMap(c)
 	fmt.Println("ur", ur)
 	if err != nil {
-		logs.Logger.Error(fmt.Sprintf("请求参数解析失败：%s; \n %s", err, debug.Stack()))
+		service.Logger.Error(fmt.Sprintf("请求参数解析失败：%s; \n %s", err, debug.Stack()))
 		c.JSON(200, api.FailResponse(1001, "请求参数解析失败"))
 		return
 	}
@@ -112,7 +111,7 @@ func UpdateUser(c *gin.Context) {
 		upd.SetUsername(email.(string))
 	}
 	if _, err := upd.Save(context.Background()); err != nil {
-		logs.Logger.Error(fmt.Sprintf("更新保存失败：%s; \n %s", err, debug.Stack()))
+		service.Logger.Error(fmt.Sprintf("更新保存失败：%s; \n %s", err, debug.Stack()))
 		c.JSON(200, api.FailResponse(1005, "更新保存失败"))
 		return
 	}
@@ -128,12 +127,12 @@ func DeleteUser(c *gin.Context) {
 	intId, err := strconv.Atoi(strId)
 	if err != nil {
 		c.JSON(200, api.FailResponse(1002, "参数错误"))
-		logs.Logger.Error(fmt.Sprintf("参数错误:%s; %s", err, string(debug.Stack())))
+		service.Logger.Error(fmt.Sprintf("参数错误:%s; %s", err, string(debug.Stack())))
 		return
 	}
 	if err := db.Client.User.DeleteOneID(intId).Exec(context.Background()); err != nil {
 		c.JSON(200, api.FailResponse(1002, "删除失败"))
-		logs.Logger.Error(fmt.Sprintf("删除失败:%s; %s", err, string(debug.Stack())))
+		service.Logger.Error(fmt.Sprintf("删除失败:%s; %s", err, string(debug.Stack())))
 		return
 	}
 	c.JSON(200, gin.H{

@@ -9,7 +9,7 @@ import (
 	"pandora/db"
 	"pandora/ent"
 	"pandora/ent/task"
-	"pandora/logs"
+	"pandora/service"
 	"strconv"
 	"time"
 )
@@ -69,7 +69,7 @@ func UploadStockOnce(c *gin.Context) {
 		_, err = db.Client.Stock.CreateBulk(bulk...).Save(ctx)
 		if err != nil {
 			fmt.Println(err)
-			logs.Logger.Error(fmt.Sprintf("插入数据失败: %s", err))
+			service.Logger.Error(fmt.Sprintf("插入数据失败: %s", err))
 		}
 	}
 
