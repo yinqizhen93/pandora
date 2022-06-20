@@ -33,7 +33,7 @@ func addAuthRouter() {
 		r.GET("/currentUser", auth.GetCurrentUser)
 		//r.POST("/login", auth.Login)
 		// 重定向
-		r.POST("/regist", func(c *gin.Context) {
+		r.POST("/register", func(c *gin.Context) {
 			c.Request.URL.Path = "/auth/users"
 			Router.HandleContext(c)
 		})

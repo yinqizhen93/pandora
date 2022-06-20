@@ -149,7 +149,6 @@ func WebSocketHandler() gin.HandlerFunc {
 		}
 		fmt.Println("find new client")
 		WSHub.register <- client
-
 		// Allow collection of memory referenced by the caller by doing all work in
 		// new goroutines.
 		go client.keepReceive()
