@@ -7,6 +7,7 @@ import (
 	"pandora/api/task"
 	"pandora/middleware"
 	"pandora/service"
+	ws "pandora/service/websocket"
 )
 
 var Router = gin.Default()
@@ -19,6 +20,7 @@ func InitRouter() {
 	addStockRouter()
 	addTaskRouter()
 	addSSERouter()
+	addWSRouter()
 }
 
 func addLoginRouter() {
@@ -66,5 +68,12 @@ func addSSERouter() {
 	r := Router.Group("/sse", middleware.JWTAuth(), service.Stream.SSEHandler(), middleware.SSEHeaderMiddleware()) // JWTAuth授权
 	{
 		r.GET("/task", task.StartTaskSSE)
+	}
+}
+
+func addWSRouter() {
+	r := Router.Group("/ws", middleware.JWTAuth(), ws.WebSocketHandler()) // JWTAuth授权
+	{
+		r.GET("/task", task.StartTaskWS)
 	}
 }

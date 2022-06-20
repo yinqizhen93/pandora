@@ -10,6 +10,7 @@ import (
 	"pandora/ent/task"
 	"pandora/logs"
 	"pandora/service"
+	ws "pandora/service/websocket"
 	"runtime/debug"
 	"strconv"
 	"time"
@@ -79,6 +80,7 @@ func GetTask(c *gin.Context) {
 	c.JSON(200, resp)
 }
 
+// StartTaskSSE an example of Server Send Event
 func StartTaskSSE(c *gin.Context) {
 	go func() {
 		for {
@@ -104,4 +106,35 @@ func StartTaskSSE(c *gin.Context) {
 		}
 		return false
 	})
+}
+
+// StartTaskWS an example of WebSocket
+func StartTaskWS(c *gin.Context) {
+	cli, ok := c.Get(ws.WebSocketClient)
+	if !ok {
+		panic("no WebSocketClient find")
+	}
+
+	for {
+		msg, ok := <-cli.(*ws.Client).ReceiveStream
+		if !ok {
+			return
+		}
+		// Send current time to clients message channel
+		now := time.Now().Format("2006-01-02 15:04:05")
+		currentTime := fmt.Sprintf("The Current Time Is %v with msg %v", now, msg)
+		ws.WSHub.Message <- []byte(currentTime)
+	}
+
+	//go func() {
+	//	for {
+	//		time.Sleep(time.Second * 1)
+	//		now := time.Now().Format("2006-01-02 15:04:05")
+	//		currentTime := fmt.Sprintf("The Current Time Is %v", now)
+	//
+	//		// Send current time to clients message channel
+	//		ws.WSHub.Message <- []byte(currentTime)
+	//	}
+	//}()
+
 }
