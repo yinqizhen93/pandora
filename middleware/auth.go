@@ -39,7 +39,7 @@ func JWTAuthMiddleware() gin.HandlerFunc {
 		}
 		// 将当前请求的userId信息保存到请求的上下文c上, c每次请求都会被初始化，所以每次要保存
 		c.Set("userId", mc.UserId)
-		c.Next() // 后续的处理函数可以用过c.Get("username")来获取当前请求的用户信息
+		//c.Next() // 后续的处理函数可以用过c.Get("username")来获取当前请求的用户信息
 	}
 }
 

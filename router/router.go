@@ -5,7 +5,7 @@ import (
 	"pandora/api/auth"
 	"pandora/api/stock"
 	"pandora/api/task"
-	"pandora/middleware"
+	mdw "pandora/middleware"
 	"pandora/service"
 	ws "pandora/service/websocket"
 )
@@ -28,7 +28,7 @@ func addLoginRouter() {
 }
 
 func addAuthRouter() {
-	r := Router.Group("/auth", middleware.JWTAuthMiddleware())
+	r := Router.Group("/auth", mdw.JWTAuthMiddleware())
 	{
 		r.GET("/currentUser", auth.GetCurrentUser)
 		//r.POST("/login", auth.Login)
@@ -48,16 +48,16 @@ func addAuthRouter() {
 }
 
 func addStockRouter() {
-	r := Router.Group("/stocks", middleware.JWTAuthMiddleware())
+	r := Router.Group("/stocks", mdw.JWTAuthMiddleware())
 	{
-		r.GET("/daily", stock.GetStock)
+		r.GET("/daily", stock.GetStock, mdw.Cache())
 		r.POST("/daily/upload", stock.UploadStock)
 		r.POST("/daily/download", stock.DownloadStock)
 	}
 }
 
 func addTaskRouter() {
-	r := Router.Group("/tasks", middleware.JWTAuthMiddleware())
+	r := Router.Group("/tasks", mdw.JWTAuthMiddleware())
 	{
 		r.GET("/list", task.GetTask)
 		r.POST("/once", task.UploadStockOnce)
@@ -65,14 +65,14 @@ func addTaskRouter() {
 }
 
 func addSSERouter() {
-	r := Router.Group("/sse", middleware.JWTAuth(), service.Stream.SSEHandler(), middleware.SSEHeaderMiddleware()) // JWTAuth授权
+	r := Router.Group("/sse", mdw.JWTAuth(), service.Stream.SSEHandler(), mdw.SSEHeaderMiddleware()) // JWTAuth授权
 	{
 		r.GET("/task", task.StartTaskSSE)
 	}
 }
 
 func addWSRouter() {
-	r := Router.Group("/ws", middleware.JWTAuth(), ws.WebSocketHandler()) // JWTAuth授权
+	r := Router.Group("/ws", mdw.JWTAuth(), ws.WebSocketHandler()) // JWTAuth授权
 	{
 		r.GET("/task", task.StartTaskWS)
 	}

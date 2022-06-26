@@ -13,6 +13,6 @@ func SSEHeaderMiddleware() gin.HandlerFunc {
 		c.Header("Access-Control-Allow-Credentials", "true")
 		c.Header("Access-Control-Allow-Headers", "Authorization")
 		c.Header("Access-Control-Allow-Methods", "GET")
-		c.Next()
+		//c.Next()
 	}
 }

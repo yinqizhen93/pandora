@@ -28,6 +28,11 @@ func InitDB() *ent.Client {
 	db.SetMaxOpenConns(maxConnPool)
 	db.SetMaxIdleConns(maxIdleConns)
 	drv := entsql.OpenDB("mysql", db)
+	//cDrv := entcache.NewDriver(drv,
+	//	entcache.ContextLevel(),
+	//	entcache.TTL(time.Minute),             // 缓存过期时间
+	//	entcache.Levels(entcache.NewLRU(128)), // 缓存最大条数
+	//) // 添加山缓存
 	client := ent.NewClient(ent.Driver(drv))
 	Client = client
 	return client
