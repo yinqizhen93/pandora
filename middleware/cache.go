@@ -1,7 +1,6 @@
 package middleware
 
 import (
-	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/golang/groupcache/singleflight"
 	"pandora/service"
@@ -20,12 +19,10 @@ func Cache() gin.HandlerFunc {
 		if c.Request.Method == "GET" {
 			url := c.Request.URL.RequestURI()
 			if data, ok := service.Cache.Get(url); ok {
-				fmt.Println("find cache...")
 				ReplyFromCache(c, data)
 			} else {
 				writer := cacheWriter{key: url, ResponseWriter: c.Writer}
 				data, err := sf.Do(url, func() (interface{}, error) {
-					fmt.Println("create cache...")
 					c.Writer = &writer // 修改c.Writer为自定义writer, 添加缓存写入
 					c.Next()           // 确保先请求，cw.cache被赋值
 					return writer.cache, nil
@@ -45,7 +42,7 @@ func Cache() gin.HandlerFunc {
 
 func (cw *cacheWriter) Write(data []byte) (int, error) {
 	cw.cache = data
-	service.Cache.Set(cw.key, data, 1)
+	service.Cache.Set(cw.key, data, 1) // 更新缓存
 	service.Cache.Wait()
 	return cw.ResponseWriter.Write(data) // 返回请求结果
 }
