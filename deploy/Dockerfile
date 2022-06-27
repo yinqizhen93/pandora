@@ -19,6 +19,8 @@ RUN go build -o pandora .
 
 # alpine 镜像
 FROM alpine
+# 第二阶段构建的WORKDIR命令要放在此处，不然不生效
+WORKDIR /app
 # 设置时区
 RUN apk --update add tzdata && \
     cp /usr/share/zoneinfo/Asia/Shanghai /etc/localtime && \
@@ -26,8 +28,6 @@ RUN apk --update add tzdata && \
     apk del tzdata && \
     rm -rf /var/cache/apk/* \
 
-WORKDIR /data/project
-RUN pwd
 RUN mkdir logs
 
 # COPY 命令是将源文件夹的里的子文件和文件夹复制到目的文件夹，因此需要复制整个文件夹时，指定目标文件夹和源文件夹一致
