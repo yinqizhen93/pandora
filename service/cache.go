@@ -16,7 +16,7 @@ func InitCache() {
 		panic(err)
 	}
 	Cache = cache
-	// set a value with a cost of 1
+	//// set a value with a cost of 1
 	//cache.Set("key", "value", 1)
 	//
 	//// wait for value to pass through buffers

@@ -50,7 +50,7 @@ func addAuthRouter() {
 func addStockRouter() {
 	r := Router.Group("/stocks", mdw.JWTAuthMiddleware())
 	{
-		r.GET("/daily", stock.GetStock, mdw.Cache())
+		r.GET("/daily", mdw.Cache(), stock.GetStock)
 		r.POST("/daily/upload", stock.UploadStock)
 		r.POST("/daily/download", stock.DownloadStock)
 	}
