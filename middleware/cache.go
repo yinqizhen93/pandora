@@ -42,7 +42,7 @@ func WithTimeOut(t int) OptionFunc {
 //	}
 //}
 
-// CacheWithOpt 带超时限制，仅缓存GET请求和json返回
+// CacheWithOpt 带超时限制，不建议使用
 func CacheWithOpt(opts ...OptionFunc) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		if c.Request.Method == "GET" {
@@ -100,6 +100,7 @@ func Cache() gin.HandlerFunc {
 				replyFromData(c, data)
 			} else {
 				writer := cacheWriter{key: url, ResponseWriter: c.Writer}
+				// 一个goroutine panic, 其他goroutine也panic， 然后都被recovery middleware 捕获
 				data, err, _ := sf.Do(url, fnWrapper(c, url, &writer))
 				if err == nil {
 					// singleflight 阻塞的其他请求, 其cache未初始化，直接返回从singleflight获取的返回值
