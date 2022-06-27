@@ -96,9 +96,9 @@ func GetStock(c *gin.Context) {
 
 	//fmt.Println(stocks)
 	resp := gin.H{
-		"code":  "success",
-		"data":  stocks,
-		"total": total,
+		"success": true,
+		"data":    stocks,
+		"total":   total,
 	}
 	c.JSON(200, resp)
 }
