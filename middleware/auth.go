@@ -1,8 +1,11 @@
 package middleware
 
 import (
+	"context"
+	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
 	"log"
+	"pandora/db"
 	"pandora/service"
 	"strings"
 )
@@ -29,9 +32,25 @@ func JWTAuthMiddleware() gin.HandlerFunc {
 			return
 		}
 		// parts[1]是获取到的tokenString，我们使用之前定义好的解析JWT的函数来解析它
-		mc, err := service.ParseToken(parts[1])
+		tk, mc, err := service.ParseToken(parts[1])
 		if err != nil {
 			log.Println(err)
+			if ve, ok := err.(*jwt.ValidationError); ok {
+				if ve.Errors == jwt.ValidationErrorExpired { // token过期
+					if claims, ok := tk.Claims.(*service.Claims); ok {
+						if tokenCanRefresh(claims.UserId) {
+							newToken, err := service.CreateToken(claims.UserId)
+							if err != nil {
+								panic(err)
+							}
+							c.Header("x-refreshed-token", newToken)
+							return
+						}
+					} else {
+						panic("token claims 有错误")
+					}
+				}
+			}
 			c.AbortWithStatusJSON(401, gin.H{
 				"msg": "无效的Token",
 			})
@@ -59,7 +78,7 @@ func JWTAuth() gin.HandlerFunc {
 			})
 		}
 		// parts[1]是获取到的tokenString，我们使用之前定义好的解析JWT的函数来解析它
-		mc, err := service.ParseToken(parts[1])
+		_, mc, err := service.ParseToken(parts[1])
 		if err != nil {
 			log.Println(err)
 			c.AbortWithStatusJSON(401, gin.H{
@@ -70,4 +89,13 @@ func JWTAuth() gin.HandlerFunc {
 		c.Set("userId", mc.UserId)
 		c.Next()
 	}
+}
+
+func tokenCanRefresh(id int) bool {
+	ctx := context.Background()
+	user, err := db.Client.User.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return !service.RefreshTokenExpired(user.RefreshToken)
 }

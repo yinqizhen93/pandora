@@ -40,6 +40,9 @@ func Login(c *gin.Context) {
 		if err != nil {
 			panic(err)
 		}
+		// 保存refreshToken
+		refreshToken := service.CreateRefreshToken()
+		service.SaveRefreshToken(userId, refreshToken)
 		c.JSON(http.StatusOK, gin.H{
 			"success": true,
 			"data":    gin.H{"token": tokenString},

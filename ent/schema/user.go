@@ -17,7 +17,7 @@ func (User) Fields() []ent.Field {
 		field.String("username").Unique(),
 		field.String("password"),
 		field.String("email").Unique(),
-		field.String("refreshToken").StorageKey("refreshToken"),
+		field.String("refreshToken").StorageKey("refresh_token"),
 		field.Time("createdAt").StorageKey("created_at").Default(time.Now).Immutable(),
 		field.Time("updatedAt").StorageKey("updated_at").Default(time.Now).UpdateDefault(time.Now),
 	}

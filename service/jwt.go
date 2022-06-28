@@ -1,8 +1,12 @@
 package service
 
 import (
+	"context"
+	"encoding/base64"
+	"encoding/json"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/pkg/errors"
+	"pandora/db"
 	"time"
 )
 
@@ -15,9 +19,11 @@ type Claims struct {
 	jwt.StandardClaims
 }
 
-const TokenExpireDuration = time.Hour * 8
+const TokenExpireDuration = time.Second * 10
 
-var Secret = []byte("夏天夏天悄悄过去")
+const RefreshTokenExpireDuration = time.Hour * 24 * 7
+
+var Secret = []byte("SecretKeyNotUsedInProduction")
 
 // CreateToken 生成JWT
 func CreateToken(userId int) (string, error) {
@@ -35,17 +41,57 @@ func CreateToken(userId int) (string, error) {
 	return token.SignedString(Secret)
 }
 
+type RefreshToken struct {
+	IssuedAt    int64
+	ExpiresAt   int64
+	AutoRefresh bool
+}
+
+func SaveRefreshToken(id int, rt string) {
+	db.Client.User.UpdateOneID(id).SetRefreshToken(rt).SaveX(context.Background())
+}
+
+func CreateRefreshToken() string {
+	rt := RefreshToken{
+		IssuedAt:  time.Now().Unix(),
+		ExpiresAt: time.Now().Add(RefreshTokenExpireDuration).Unix(),
+	}
+	byteRt, err := json.Marshal(rt)
+	if err != nil {
+		panic(err)
+	}
+	return base64.URLEncoding.EncodeToString(byteRt)
+}
+
+//var TokenExpiredErr = errors.New("refresh token has expired")
+
+func RefreshTokenExpired(token string) bool {
+	var rt RefreshToken
+	byteToken, err := base64.URLEncoding.DecodeString(token)
+	if err != nil {
+		panic(err)
+	}
+	err = json.Unmarshal(byteToken, &rt)
+	if err != nil {
+		panic(err)
+	}
+	if time.Unix(rt.ExpiresAt, 0).Before(time.Now()) {
+		return true
+	}
+	return false
+}
+
 // ParseToken 解析JWT
-func ParseToken(tokenString string) (*Claims, error) {
+func ParseToken(tokenString string) (*jwt.Token, *Claims, error) {
 	// 解析token
 	token, err := jwt.ParseWithClaims(tokenString, &Claims{}, func(token *jwt.Token) (i interface{}, err error) {
 		return Secret, nil
 	})
 	if err != nil {
-		return nil, err
+		return token, nil, err
 	}
 	if claims, ok := token.Claims.(*Claims); ok && token.Valid { // 校验token
-		return claims, nil
+		return token, claims, nil
 	}
-	return nil, errors.New("invalid token")
+	return token, nil, errors.New("invalid token")
 }
