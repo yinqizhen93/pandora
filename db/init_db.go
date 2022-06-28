@@ -11,7 +11,7 @@ import (
 
 var Client *ent.Client
 
-func InitDB() *ent.Client {
+func InitDB() {
 	host := viper.GetString("database.host")
 	port := viper.GetString("database.port")
 	user := viper.GetString("database.username")
@@ -35,7 +35,6 @@ func InitDB() *ent.Client {
 	//) // 添加山缓存
 	client := ent.NewClient(ent.Driver(drv))
 	Client = client
-	return client
 
 	// Run the auto migration tool.
 	//if err := client.Schema.Create(context.Background()); err != nil {

@@ -4,6 +4,7 @@ package ent
 
 import (
 	"pandora/ent/schema"
+	"pandora/ent/stock"
 	"pandora/ent/task"
 	"pandora/ent/user"
 	"time"
@@ -13,6 +14,12 @@ import (
 // (default values, validators, hooks and policies) and stitches it
 // to their package variables.
 func init() {
+	stockFields := schema.Stock{}.Fields()
+	_ = stockFields
+	// stockDescMarket is the schema descriptor for market field.
+	stockDescMarket := stockFields[0].Descriptor()
+	// stock.MarketValidator is a validator for the "market" field. It is called by the builders before save.
+	stock.MarketValidator = stockDescMarket.Validators[0].(func(string) error)
 	taskFields := schema.Task{}.Fields()
 	_ = taskFields
 	// taskDescCreatedAt is the schema descriptor for createdAt field.
@@ -22,11 +29,11 @@ func init() {
 	userFields := schema.User{}.Fields()
 	_ = userFields
 	// userDescCreatedAt is the schema descriptor for createdAt field.
-	userDescCreatedAt := userFields[3].Descriptor()
+	userDescCreatedAt := userFields[4].Descriptor()
 	// user.DefaultCreatedAt holds the default value on creation for the createdAt field.
 	user.DefaultCreatedAt = userDescCreatedAt.Default.(func() time.Time)
 	// userDescUpdatedAt is the schema descriptor for updatedAt field.
-	userDescUpdatedAt := userFields[4].Descriptor()
+	userDescUpdatedAt := userFields[5].Descriptor()
 	// user.DefaultUpdatedAt holds the default value on creation for the updatedAt field.
 	user.DefaultUpdatedAt = userDescUpdatedAt.Default.(func() time.Time)
 	// user.UpdateDefaultUpdatedAt holds the default value on update for the updatedAt field.

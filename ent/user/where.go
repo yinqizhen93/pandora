@@ -113,6 +113,13 @@ func Email(v string) predicate.User {
 	})
 }
 
+// RefreshToken applies equality check predicate on the "refreshToken" field. It's identical to RefreshTokenEQ.
+func RefreshToken(v string) predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldRefreshToken), v))
+	})
+}
+
 // CreatedAt applies equality check predicate on the "createdAt" field. It's identical to CreatedAtEQ.
 func CreatedAt(v time.Time) predicate.User {
 	return predicate.User(func(s *sql.Selector) {
@@ -457,6 +464,117 @@ func EmailEqualFold(v string) predicate.User {
 func EmailContainsFold(v string) predicate.User {
 	return predicate.User(func(s *sql.Selector) {
 		s.Where(sql.ContainsFold(s.C(FieldEmail), v))
+	})
+}
+
+// RefreshTokenEQ applies the EQ predicate on the "refreshToken" field.
+func RefreshTokenEQ(v string) predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldRefreshToken), v))
+	})
+}
+
+// RefreshTokenNEQ applies the NEQ predicate on the "refreshToken" field.
+func RefreshTokenNEQ(v string) predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		s.Where(sql.NEQ(s.C(FieldRefreshToken), v))
+	})
+}
+
+// RefreshTokenIn applies the In predicate on the "refreshToken" field.
+func RefreshTokenIn(vs ...string) predicate.User {
+	v := make([]interface{}, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.User(func(s *sql.Selector) {
+		// if not arguments were provided, append the FALSE constants,
+		// since we can't apply "IN ()". This will make this predicate falsy.
+		if len(v) == 0 {
+			s.Where(sql.False())
+			return
+		}
+		s.Where(sql.In(s.C(FieldRefreshToken), v...))
+	})
+}
+
+// RefreshTokenNotIn applies the NotIn predicate on the "refreshToken" field.
+func RefreshTokenNotIn(vs ...string) predicate.User {
+	v := make([]interface{}, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.User(func(s *sql.Selector) {
+		// if not arguments were provided, append the FALSE constants,
+		// since we can't apply "IN ()". This will make this predicate falsy.
+		if len(v) == 0 {
+			s.Where(sql.False())
+			return
+		}
+		s.Where(sql.NotIn(s.C(FieldRefreshToken), v...))
+	})
+}
+
+// RefreshTokenGT applies the GT predicate on the "refreshToken" field.
+func RefreshTokenGT(v string) predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		s.Where(sql.GT(s.C(FieldRefreshToken), v))
+	})
+}
+
+// RefreshTokenGTE applies the GTE predicate on the "refreshToken" field.
+func RefreshTokenGTE(v string) predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		s.Where(sql.GTE(s.C(FieldRefreshToken), v))
+	})
+}
+
+// RefreshTokenLT applies the LT predicate on the "refreshToken" field.
+func RefreshTokenLT(v string) predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		s.Where(sql.LT(s.C(FieldRefreshToken), v))
+	})
+}
+
+// RefreshTokenLTE applies the LTE predicate on the "refreshToken" field.
+func RefreshTokenLTE(v string) predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		s.Where(sql.LTE(s.C(FieldRefreshToken), v))
+	})
+}
+
+// RefreshTokenContains applies the Contains predicate on the "refreshToken" field.
+func RefreshTokenContains(v string) predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		s.Where(sql.Contains(s.C(FieldRefreshToken), v))
+	})
+}
+
+// RefreshTokenHasPrefix applies the HasPrefix predicate on the "refreshToken" field.
+func RefreshTokenHasPrefix(v string) predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		s.Where(sql.HasPrefix(s.C(FieldRefreshToken), v))
+	})
+}
+
+// RefreshTokenHasSuffix applies the HasSuffix predicate on the "refreshToken" field.
+func RefreshTokenHasSuffix(v string) predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		s.Where(sql.HasSuffix(s.C(FieldRefreshToken), v))
+	})
+}
+
+// RefreshTokenEqualFold applies the EqualFold predicate on the "refreshToken" field.
+func RefreshTokenEqualFold(v string) predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		s.Where(sql.EqualFold(s.C(FieldRefreshToken), v))
+	})
+}
+
+// RefreshTokenContainsFold applies the ContainsFold predicate on the "refreshToken" field.
+func RefreshTokenContainsFold(v string) predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		s.Where(sql.ContainsFold(s.C(FieldRefreshToken), v))
 	})
 }
 

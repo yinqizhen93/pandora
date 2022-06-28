@@ -22,6 +22,8 @@ type User struct {
 	Password string `json:"password,omitempty"`
 	// Email holds the value of the "email" field.
 	Email string `json:"email,omitempty"`
+	// RefreshToken holds the value of the "refreshToken" field.
+	RefreshToken string `json:"refreshToken,omitempty"`
 	// CreatedAt holds the value of the "createdAt" field.
 	CreatedAt time.Time `json:"createdAt,omitempty"`
 	// UpdatedAt holds the value of the "updatedAt" field.
@@ -35,7 +37,7 @@ func (*User) scanValues(columns []string) ([]interface{}, error) {
 		switch columns[i] {
 		case user.FieldID:
 			values[i] = new(sql.NullInt64)
-		case user.FieldUsername, user.FieldPassword, user.FieldEmail:
+		case user.FieldUsername, user.FieldPassword, user.FieldEmail, user.FieldRefreshToken:
 			values[i] = new(sql.NullString)
 		case user.FieldCreatedAt, user.FieldUpdatedAt:
 			values[i] = new(sql.NullTime)
@@ -77,6 +79,12 @@ func (u *User) assignValues(columns []string, values []interface{}) error {
 				return fmt.Errorf("unexpected type %T for field email", values[i])
 			} else if value.Valid {
 				u.Email = value.String
+			}
+		case user.FieldRefreshToken:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field refreshToken", values[i])
+			} else if value.Valid {
+				u.RefreshToken = value.String
 			}
 		case user.FieldCreatedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
@@ -124,6 +132,8 @@ func (u *User) String() string {
 	builder.WriteString(u.Password)
 	builder.WriteString(", email=")
 	builder.WriteString(u.Email)
+	builder.WriteString(", refreshToken=")
+	builder.WriteString(u.RefreshToken)
 	builder.WriteString(", createdAt=")
 	builder.WriteString(u.CreatedAt.Format(time.ANSIC))
 	builder.WriteString(", updatedAt=")

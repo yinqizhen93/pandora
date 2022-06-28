@@ -17,6 +17,8 @@ const (
 	FieldPassword = "password"
 	// FieldEmail holds the string denoting the email field in the database.
 	FieldEmail = "email"
+	// FieldRefreshToken holds the string denoting the refreshtoken field in the database.
+	FieldRefreshToken = "refreshToken"
 	// FieldCreatedAt holds the string denoting the createdat field in the database.
 	FieldCreatedAt = "created_at"
 	// FieldUpdatedAt holds the string denoting the updatedat field in the database.
@@ -31,6 +33,7 @@ var Columns = []string{
 	FieldUsername,
 	FieldPassword,
 	FieldEmail,
+	FieldRefreshToken,
 	FieldCreatedAt,
 	FieldUpdatedAt,
 }

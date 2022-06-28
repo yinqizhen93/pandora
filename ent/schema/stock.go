@@ -13,7 +13,7 @@ type Stock struct {
 // Fields of the Stock.
 func (Stock) Fields() []ent.Field {
 	return []ent.Field{
-		field.String("market"),
+		field.String("market").MaxLen(4),
 		field.String("code"),
 		field.String("name"),
 		field.Time("date"),

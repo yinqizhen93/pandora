@@ -159,6 +159,11 @@ func (sc *StockCreate) check() error {
 	if _, ok := sc.mutation.Market(); !ok {
 		return &ValidationError{Name: "market", err: errors.New(`ent: missing required field "Stock.market"`)}
 	}
+	if v, ok := sc.mutation.Market(); ok {
+		if err := stock.MarketValidator(v); err != nil {
+			return &ValidationError{Name: "market", err: fmt.Errorf(`ent: validator failed for field "Stock.market": %w`, err)}
+		}
+	}
 	if _, ok := sc.mutation.Code(); !ok {
 		return &ValidationError{Name: "code", err: errors.New(`ent: missing required field "Stock.code"`)}
 	}
