@@ -8,20 +8,24 @@ import (
 
 type Bucket struct {
 	tokens chan struct{}
-	burst  uint
-	limit  uint // token 生成速率，1秒多少个
+	burst  int
+	limit  int // token 生成速率，1秒多少个
 	n      int32
 	close  chan struct{}
 }
 
 //type Bucket chan struct{}
 
-func NewBucket(burst, limit uint) *Bucket {
+func NewBucket(limit, burst int) *Bucket {
 	b := &Bucket{
 		tokens: make(chan struct{}, burst),
 		burst:  burst,
 		limit:  limit,
 		close:  make(chan struct{}),
+	}
+	// full the bucket
+	for i := 0; i < int(burst); i++ {
+		b.tokens <- struct{}{}
 	}
 	go b.Drop()
 	return b
@@ -70,6 +74,6 @@ func (b *Bucket) Close() {
 }
 
 // DropInterval interval of Nanosecond to drop a token
-func DropInterval(limit uint) time.Duration {
+func DropInterval(limit int) time.Duration {
 	return (time.Second / time.Nanosecond) / time.Duration(limit)
 }

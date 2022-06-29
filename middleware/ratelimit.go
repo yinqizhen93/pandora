@@ -11,7 +11,7 @@ import (
 var limiter *rate.Limiter
 
 func init() {
-	limiter = rate.NewLimiter(1, 1)
+	limiter = rate.NewLimiter(100, 10000)
 }
 
 func RateLimit() gin.HandlerFunc {
@@ -34,7 +34,7 @@ func RateLimit() gin.HandlerFunc {
 var bucket *service.Bucket
 
 func init() {
-	bucket = service.NewBucket(0, 1)
+	bucket = service.NewBucket(100, 10000)
 }
 
 func RateLimit2() gin.HandlerFunc {
