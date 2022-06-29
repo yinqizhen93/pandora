@@ -4,7 +4,6 @@ package ent
 
 import (
 	"pandora/ent/schema"
-	"pandora/ent/stock"
 	"pandora/ent/task"
 	"pandora/ent/user"
 	"time"
@@ -14,12 +13,6 @@ import (
 // (default values, validators, hooks and policies) and stitches it
 // to their package variables.
 func init() {
-	stockFields := schema.Stock{}.Fields()
-	_ = stockFields
-	// stockDescMarket is the schema descriptor for market field.
-	stockDescMarket := stockFields[0].Descriptor()
-	// stock.MarketValidator is a validator for the "market" field. It is called by the builders before save.
-	stock.MarketValidator = stockDescMarket.Validators[0].(func(string) error)
 	taskFields := schema.Task{}.Fields()
 	_ = taskFields
 	// taskDescCreatedAt is the schema descriptor for createdAt field.

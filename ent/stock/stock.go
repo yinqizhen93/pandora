@@ -58,8 +58,3 @@ func ValidColumn(column string) bool {
 	}
 	return false
 }
-
-var (
-	// MarketValidator is a validator for the "market" field. It is called by the builders before save.
-	MarketValidator func(string) error
-)

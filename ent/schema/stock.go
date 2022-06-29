@@ -2,6 +2,7 @@ package schema
 
 import (
 	"entgo.io/ent"
+	"entgo.io/ent/dialect"
 	"entgo.io/ent/schema/field"
 )
 
@@ -13,7 +14,9 @@ type Stock struct {
 // Fields of the Stock.
 func (Stock) Fields() []ent.Field {
 	return []ent.Field{
-		field.String("market").MaxLen(4),
+		field.String("market").SchemaType(map[string]string{
+			dialect.MySQL: "char(4)",
+		}),
 		field.String("code"),
 		field.String("name"),
 		field.Time("date"),

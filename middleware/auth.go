@@ -44,6 +44,7 @@ func JWTAuthMiddleware() gin.HandlerFunc {
 								panic(err)
 							}
 							c.Header("x-refreshed-token", newToken)
+							c.Set("userId", claims.UserId) // token 过期也要设置userID
 							return
 						}
 					} else {

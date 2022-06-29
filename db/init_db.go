@@ -1,11 +1,13 @@
 package db
 
 import (
+	"context"
 	"database/sql"
 	entsql "entgo.io/ent/dialect/sql"
 	"fmt"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/spf13/viper"
+	"log"
 	"pandora/ent"
 )
 
@@ -37,8 +39,7 @@ func InitDB() {
 	Client = client
 
 	// Run the auto migration tool.
-	//if err := client.Schema.Create(context.Background()); err != nil {
-	//	log.Fatalf("failed creating schema resources: %v", err)
-	//}
-	//return client
+	if err := client.Schema.Create(context.Background()); err != nil {
+		log.Fatalf("failed creating schema resources: %v", err)
+	}
 }

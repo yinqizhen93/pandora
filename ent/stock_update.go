@@ -155,18 +155,12 @@ func (su *StockUpdate) Save(ctx context.Context) (int, error) {
 		affected int
 	)
 	if len(su.hooks) == 0 {
-		if err = su.check(); err != nil {
-			return 0, err
-		}
 		affected, err = su.sqlSave(ctx)
 	} else {
 		var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
 			mutation, ok := m.(*StockMutation)
 			if !ok {
 				return nil, fmt.Errorf("unexpected mutation type %T", m)
-			}
-			if err = su.check(); err != nil {
-				return 0, err
 			}
 			su.mutation = mutation
 			affected, err = su.sqlSave(ctx)
@@ -206,16 +200,6 @@ func (su *StockUpdate) ExecX(ctx context.Context) {
 	if err := su.Exec(ctx); err != nil {
 		panic(err)
 	}
-}
-
-// check runs all checks and user-defined validators on the builder.
-func (su *StockUpdate) check() error {
-	if v, ok := su.mutation.Market(); ok {
-		if err := stock.MarketValidator(v); err != nil {
-			return &ValidationError{Name: "market", err: fmt.Errorf(`ent: validator failed for field "Stock.market": %w`, err)}
-		}
-	}
-	return nil
 }
 
 func (su *StockUpdate) sqlSave(ctx context.Context) (n int, err error) {
@@ -515,18 +499,12 @@ func (suo *StockUpdateOne) Save(ctx context.Context) (*Stock, error) {
 		node *Stock
 	)
 	if len(suo.hooks) == 0 {
-		if err = suo.check(); err != nil {
-			return nil, err
-		}
 		node, err = suo.sqlSave(ctx)
 	} else {
 		var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
 			mutation, ok := m.(*StockMutation)
 			if !ok {
 				return nil, fmt.Errorf("unexpected mutation type %T", m)
-			}
-			if err = suo.check(); err != nil {
-				return nil, err
 			}
 			suo.mutation = mutation
 			node, err = suo.sqlSave(ctx)
@@ -566,16 +544,6 @@ func (suo *StockUpdateOne) ExecX(ctx context.Context) {
 	if err := suo.Exec(ctx); err != nil {
 		panic(err)
 	}
-}
-
-// check runs all checks and user-defined validators on the builder.
-func (suo *StockUpdateOne) check() error {
-	if v, ok := suo.mutation.Market(); ok {
-		if err := stock.MarketValidator(v); err != nil {
-			return &ValidationError{Name: "market", err: fmt.Errorf(`ent: validator failed for field "Stock.market": %w`, err)}
-		}
-	}
-	return nil
 }
 
 func (suo *StockUpdateOne) sqlSave(ctx context.Context) (_node *Stock, err error) {
