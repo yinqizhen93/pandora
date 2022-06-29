@@ -1,7 +1,6 @@
 package task
 
 import (
-	"context"
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/xuri/excelize/v2"
@@ -65,7 +64,7 @@ func UploadStockOnce(c *gin.Context) {
 			}
 			bulk[ri] = sc
 		}
-		ctx := context.Background()
+		ctx := c.Request.Context()
 		_, err = db.Client.Stock.CreateBulk(bulk...).Save(ctx)
 		if err != nil {
 			fmt.Println(err)

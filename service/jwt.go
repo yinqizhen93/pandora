@@ -19,7 +19,7 @@ type Claims struct {
 	jwt.StandardClaims
 }
 
-const TokenExpireDuration = time.Second * 10
+const TokenExpireDuration = time.Minute * 60
 
 const RefreshTokenExpireDuration = time.Hour * 24 * 7
 
@@ -47,8 +47,8 @@ type RefreshToken struct {
 	AutoRefresh bool
 }
 
-func SaveRefreshToken(id int, rt string) {
-	db.Client.User.UpdateOneID(id).SetRefreshToken(rt).SaveX(context.Background())
+func SaveRefreshToken(ctx context.Context, id int, rt string) {
+	db.Client.User.UpdateOneID(id).SetRefreshToken(rt).SaveX(ctx)
 }
 
 func CreateRefreshToken() string {

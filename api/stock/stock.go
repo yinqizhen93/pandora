@@ -1,7 +1,6 @@
 package stock
 
 import (
-	"context"
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/xuri/excelize/v2"
@@ -68,7 +67,8 @@ func GetStock(c *gin.Context) {
 		return
 	}
 
-	ctx := context.Background()
+	ctx := c.Request.Context()
+
 	offset := (page - 1) * pageSize
 	stockQuery := db.Client.Stock.Query().Where(stock.And(
 		stock.DateGTE(startDate),
@@ -153,7 +153,7 @@ func UploadStock(c *gin.Context) {
 			}
 			bulk[ri] = sc
 		}
-		ctx := context.Background()
+		ctx := c.Request.Context()
 		_, err = db.Client.Stock.CreateBulk(bulk...).Save(ctx)
 		if err != nil {
 			fmt.Println(err)
@@ -230,7 +230,7 @@ func DownloadStock(c *gin.Context) {
 				stock.NameContains(udp.SearchVal),
 			))
 	}
-	ctx := context.Background()
+	ctx := c.Request.Context()
 	stocks, err := stockQuery.Select().All(ctx)
 	if err != nil {
 		c.JSON(200, api.FailResponse(3002, "查询数据失败"))

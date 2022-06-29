@@ -29,7 +29,8 @@ func Login(c *gin.Context) {
 	// 校验用户名和密码是否正确
 	if userInf.Username == "admin" && userInf.Password == "123" {
 		// 生成Token
-		userId, err := getUserIdByName(userInf.Username)
+		ctx := c.Request.Context()
+		userId, err := getUserIdByName(ctx, userInf.Username)
 		if err != nil {
 			// todo 记录日志
 			service.Logger.Error(fmt.Sprintf("获取用户失败：%s; \n %s", err, debug.Stack()))
@@ -42,7 +43,7 @@ func Login(c *gin.Context) {
 		}
 		// 保存refreshToken
 		refreshToken := service.CreateRefreshToken()
-		service.SaveRefreshToken(userId, refreshToken)
+		service.SaveRefreshToken(ctx, userId, refreshToken)
 		c.JSON(http.StatusOK, gin.H{
 			"success": true,
 			"data":    gin.H{"token": tokenString},
@@ -53,8 +54,7 @@ func Login(c *gin.Context) {
 	return
 }
 
-func getUserIdByName(name string) (int, error) {
-	ctx := context.Background()
+func getUserIdByName(ctx context.Context, name string) (int, error) {
 	userId, err := db.Client.User.Query().Where(user.UsernameEQ(name)).Select("id").Int(ctx)
 	//db.DB.Where("username = ?", name).First(&user)
 	if err != nil {

@@ -91,8 +91,8 @@ func CacheWithOpt(opts ...OptionFunc) gin.HandlerFunc {
 	}
 }
 
-// Cache 不带超时限制, 仅缓存GET请求和json返回
-func Cache() gin.HandlerFunc {
+// CacheHandler 不带超时限制, 仅缓存GET请求和json返回
+func CacheHandler() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		if c.Request.Method == "GET" {
 			url := c.Request.URL.RequestURI()

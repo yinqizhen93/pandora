@@ -38,7 +38,7 @@ func JWTAuthMiddleware() gin.HandlerFunc {
 			if ve, ok := err.(*jwt.ValidationError); ok {
 				if ve.Errors == jwt.ValidationErrorExpired { // token过期
 					if claims, ok := tk.Claims.(*service.Claims); ok {
-						if tokenCanRefresh(claims.UserId) {
+						if tokenCanRefresh(c.Request.Context(), claims.UserId) {
 							newToken, err := service.CreateToken(claims.UserId)
 							if err != nil {
 								panic(err)
@@ -78,21 +78,37 @@ func JWTAuth() gin.HandlerFunc {
 			})
 		}
 		// parts[1]是获取到的tokenString，我们使用之前定义好的解析JWT的函数来解析它
-		_, mc, err := service.ParseToken(parts[1])
+		tk, mc, err := service.ParseToken(parts[1])
 		if err != nil {
 			log.Println(err)
+			if ve, ok := err.(*jwt.ValidationError); ok {
+				if ve.Errors == jwt.ValidationErrorExpired { // token过期
+					if claims, ok := tk.Claims.(*service.Claims); ok {
+						if tokenCanRefresh(c.Request.Context(), claims.UserId) {
+							newToken, err := service.CreateToken(claims.UserId)
+							if err != nil {
+								panic(err)
+							}
+							c.Header("x-refreshed-token", newToken)
+							return
+						}
+					} else {
+						panic("token claims 有错误")
+					}
+				}
+			}
 			c.AbortWithStatusJSON(401, gin.H{
 				"msg": "无效的Token",
 			})
+			return
 		}
 		// 将当前请求的userId信息保存到请求的上下文c上
 		c.Set("userId", mc.UserId)
-		c.Next()
+		//c.Next()
 	}
 }
 
-func tokenCanRefresh(id int) bool {
-	ctx := context.Background()
+func tokenCanRefresh(ctx context.Context, id int) bool {
 	user, err := db.Client.User.Get(ctx, id)
 	if err != nil {
 		panic(err)

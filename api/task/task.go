@@ -1,7 +1,6 @@
 package task
 
 import (
-	"context"
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"pandora/db"
@@ -26,7 +25,7 @@ func NewTask(name string, taskType task.Type, describe string, f func()) Task {
 }
 
 func (t *Task) Start(c *gin.Context) {
-	ctx := context.Background()
+	ctx := c.Request.Context()
 	startTime := time.Now()
 	userId, ok := c.Get("userId")
 	if !ok {

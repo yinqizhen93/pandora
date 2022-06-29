@@ -1,7 +1,6 @@
 package task
 
 import (
-	"context"
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"io"
@@ -39,7 +38,7 @@ func GetTask(c *gin.Context) {
 		return
 	}
 
-	ctx := context.Background()
+	ctx := c.Request.Context()
 	offset := (page - 1) * pageSize
 	stockQuery := db.Client.Task.Query()
 	strTaskStatus, ok := c.GetQueryArray("taskStatus")

@@ -1,7 +1,6 @@
 package auth
 
 import (
-	"context"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"fmt"
 	"github.com/gin-gonic/gin"
@@ -14,7 +13,7 @@ import (
 )
 
 func GetUser(c *gin.Context) {
-	ctx := context.Background()
+	ctx := c.Request.Context()
 	cols := []string{"id", "username", "email"}
 	users, err := db.Client.User.Query().Select(cols...).All(ctx)
 	if err != nil {
@@ -26,7 +25,7 @@ func GetUser(c *gin.Context) {
 
 func GetCurrentUser(c *gin.Context) {
 	//var users ent.Users
-	ctx := context.Background()
+	ctx := c.Request.Context()
 	curUserId, ok := c.Get("userId")
 	if !ok {
 		c.JSON(200, api.FailResponse(2005, "用户不存在"))
@@ -63,7 +62,7 @@ func CreateUser(c *gin.Context) {
 		c.JSON(200, api.FailResponse(1001, "请求参数错误"))
 		return
 	}
-	ctx := context.Background()
+	ctx := c.Request.Context()
 	u, err := db.Client.User.Create().
 		SetUsername(ur.Username).
 		SetPassword(ur.Password).
@@ -110,7 +109,7 @@ func UpdateUser(c *gin.Context) {
 	if email, ok := ur["email"]; ok {
 		upd.SetUsername(email.(string))
 	}
-	if _, err := upd.Save(context.Background()); err != nil {
+	if _, err := upd.Save(c.Request.Context()); err != nil {
 		service.Logger.Error(fmt.Sprintf("更新保存失败：%s; \n %s", err, debug.Stack()))
 		c.JSON(200, api.FailResponse(1005, "更新保存失败"))
 		return
@@ -123,6 +122,7 @@ func UpdateUser(c *gin.Context) {
 }
 
 func DeleteUser(c *gin.Context) {
+	ctx := c.Request.Context()
 	strId := c.Param("id")
 	intId, err := strconv.Atoi(strId)
 	if err != nil {
@@ -130,7 +130,7 @@ func DeleteUser(c *gin.Context) {
 		service.Logger.Error(fmt.Sprintf("参数错误:%s; %s", err, string(debug.Stack())))
 		return
 	}
-	if err := db.Client.User.DeleteOneID(intId).Exec(context.Background()); err != nil {
+	if err := db.Client.User.DeleteOneID(intId).Exec(ctx); err != nil {
 		c.JSON(200, api.FailResponse(1002, "删除失败"))
 		service.Logger.Error(fmt.Sprintf("删除失败:%s; %s", err, string(debug.Stack())))
 		return
