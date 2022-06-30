@@ -62,6 +62,8 @@ func ValidColumn(column string) bool {
 }
 
 var (
+	// DefaultRefreshToken holds the default value on creation for the "refreshToken" field.
+	DefaultRefreshToken string
 	// DefaultCreatedAt holds the default value on creation for the "createdAt" field.
 	DefaultCreatedAt func() time.Time
 	// DefaultUpdatedAt holds the default value on creation for the "updatedAt" field.

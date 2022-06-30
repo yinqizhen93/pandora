@@ -53,6 +53,14 @@ func (uu *UserUpdate) SetRefreshToken(s string) *UserUpdate {
 	return uu
 }
 
+// SetNillableRefreshToken sets the "refreshToken" field if the given value is not nil.
+func (uu *UserUpdate) SetNillableRefreshToken(s *string) *UserUpdate {
+	if s != nil {
+		uu.SetRefreshToken(*s)
+	}
+	return uu
+}
+
 // SetUpdatedAt sets the "updatedAt" field.
 func (uu *UserUpdate) SetUpdatedAt(t time.Time) *UserUpdate {
 	uu.mutation.SetUpdatedAt(t)
@@ -310,6 +318,14 @@ func (uuo *UserUpdateOne) SetEmail(s string) *UserUpdateOne {
 // SetRefreshToken sets the "refreshToken" field.
 func (uuo *UserUpdateOne) SetRefreshToken(s string) *UserUpdateOne {
 	uuo.mutation.SetRefreshToken(s)
+	return uuo
+}
+
+// SetNillableRefreshToken sets the "refreshToken" field if the given value is not nil.
+func (uuo *UserUpdateOne) SetNillableRefreshToken(s *string) *UserUpdateOne {
+	if s != nil {
+		uuo.SetRefreshToken(*s)
+	}
 	return uuo
 }
 

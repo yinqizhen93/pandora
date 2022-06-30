@@ -37,7 +37,7 @@ func addAuthRouter() {
 			c.Request.URL.Path = "/auth/users"
 			Router.HandleContext(c)
 		})
-		user := r.Group("/users")
+		user := r.Group("/users", mdw.CacheHandler("User"))
 		{
 			user.GET("/", auth.GetUser)
 			user.POST("/", auth.CreateUser)
@@ -50,7 +50,7 @@ func addAuthRouter() {
 func addStockRouter() {
 	r := Router.Group("/stocks", mdw.JWTAuthMiddleware())
 	{
-		r.GET("/daily", mdw.TimeOut(2000), mdw.RateLimit(), mdw.AccessControl(), mdw.CacheHandler(), stock.GetStock)
+		r.GET("/daily", mdw.TimeOut(2000), mdw.RateLimit(), mdw.AccessControl(), mdw.CacheHandler("Stock"), stock.GetStock)
 		r.POST("/daily/upload", stock.UploadStock)
 		r.POST("/daily/download", stock.DownloadStock)
 	}

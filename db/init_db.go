@@ -9,6 +9,7 @@ import (
 	"github.com/spf13/viper"
 	"log"
 	"pandora/ent"
+	"pandora/service/cache"
 )
 
 var Client *ent.Client
@@ -35,11 +36,25 @@ func InitDB() {
 	//	entcache.TTL(time.Minute),             // 缓存过期时间
 	//	entcache.Levels(entcache.NewLRU(128)), // 缓存最大条数
 	//) // 添加山缓存
-	client := ent.NewClient(ent.Driver(drv))
-	Client = client
-
+	Client = ent.NewClient(ent.Driver(drv))
+	// add runtime hooks
+	Client.Use(removeCache)
 	// Run the auto migration tool.
-	if err := client.Schema.Create(context.Background()); err != nil {
+	if err := Client.Schema.Create(context.Background()); err != nil {
 		log.Fatalf("failed creating schema resources: %v", err)
 	}
+}
+
+// updateCache is a hook to remove related cache
+func removeCache(next ent.Mutator) ent.Mutator {
+	return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+		value, err := next.Mutate(ctx, m)
+		if err == nil { // todo 这里的错误会不会有不影响缓存更新的，
+			//if m.Op() >= 1 && m.Op() <= 5 {
+			// remove cache here
+			cache.Cache.DelBySchema(m.Type())
+			//}
+		}
+		return value, err
+	})
 }

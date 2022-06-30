@@ -21,6 +21,10 @@ func init() {
 	task.DefaultCreatedAt = taskDescCreatedAt.Default.(func() time.Time)
 	userFields := schema.User{}.Fields()
 	_ = userFields
+	// userDescRefreshToken is the schema descriptor for refreshToken field.
+	userDescRefreshToken := userFields[3].Descriptor()
+	// user.DefaultRefreshToken holds the default value on creation for the refreshToken field.
+	user.DefaultRefreshToken = userDescRefreshToken.Default.(string)
 	// userDescCreatedAt is the schema descriptor for createdAt field.
 	userDescCreatedAt := userFields[4].Descriptor()
 	// user.DefaultCreatedAt holds the default value on creation for the createdAt field.

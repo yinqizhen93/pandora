@@ -18,8 +18,7 @@ func AccessControl() gin.HandlerFunc {
 		baseUrl := strings.Split(url, "?")[0]
 		//获取请求方法
 		act := c.Request.Method
-		//todo 获取用户的角色
-		//sub := "yinqizhen"
+		//todo 获取用户的角色, 避免每次请求数据库, 可将用户角色数据放入缓存
 		ctx := c.Request.Context()
 		id, ok := c.Get("userId")
 		if !ok {

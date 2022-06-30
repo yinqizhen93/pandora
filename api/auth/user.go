@@ -20,7 +20,10 @@ func GetUser(c *gin.Context) {
 		c.JSON(200, api.FailResponse(2002, "获取用户失败"))
 	}
 	fmt.Println(users)
-	c.JSON(200, users)
+	c.JSON(200, gin.H{
+		"success": true,
+		"data":    users,
+	})
 }
 
 func GetCurrentUser(c *gin.Context) {

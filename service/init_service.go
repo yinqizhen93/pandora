@@ -1,7 +1,9 @@
 package service
 
+import "pandora/service/cache"
+
 func InitService() {
 	//InitLogger()
 	InitCasbin()
-	InitCache()
+	cache.InitCache()
 }
