@@ -28,7 +28,7 @@ func AccessControl() gin.HandlerFunc {
 		subs := getRolesByUserId(ctx, id.(int))
 		//判断策略中是否存在
 		for _, sub := range subs {
-			if ok, _ := service.Enforcer.Enforce(sub, baseUrl, act); ok {
+			if ok, _ := service.Enforcer.Enforce(sub.Name, baseUrl, act); ok {
 				return
 			}
 		}
