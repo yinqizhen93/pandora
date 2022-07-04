@@ -3,9 +3,9 @@ package main
 import (
 	"fmt"
 	"github.com/spf13/viper"
-	"pandora/db"
 	"pandora/router"
 	"pandora/service"
+	"pandora/service/db"
 	"pandora/service/logger"
 )
 

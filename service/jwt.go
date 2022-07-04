@@ -6,7 +6,7 @@ import (
 	"encoding/json"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/pkg/errors"
-	"pandora/db"
+	"pandora/service/db"
 	"time"
 )
 

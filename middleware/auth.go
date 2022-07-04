@@ -5,8 +5,8 @@ import (
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
 	"log"
-	"pandora/db"
 	"pandora/service"
+	"pandora/service/db"
 	"strings"
 )
 
