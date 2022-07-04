@@ -10,6 +10,7 @@ import (
 	"pandora/db"
 	"pandora/ent/user"
 	"pandora/service"
+	"pandora/service/logger"
 	"runtime/debug"
 )
 
@@ -33,7 +34,7 @@ func Login(c *gin.Context) {
 		userId, err := getUserIdByName(ctx, userInf.Username)
 		if err != nil {
 			// todo 记录日志
-			service.Logger.Error(fmt.Sprintf("获取用户失败：%s; \n %s", err, debug.Stack()))
+			logger.Error(fmt.Sprintf("获取用户失败：%s; \n %s", err, debug.Stack()))
 			c.JSON(http.StatusOK, api.FailResponse(2009, "登录失败"))
 			return
 		}

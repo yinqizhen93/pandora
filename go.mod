@@ -4,6 +4,7 @@ go 1.18
 
 require (
 	entgo.io/ent v0.10.1
+	github.com/bilibili/gengine v1.5.7
 	github.com/casbin/casbin/v2 v2.47.2
 	github.com/casbin/ent-adapter v0.2.1
 	github.com/dgraph-io/ristretto v0.1.0
@@ -25,6 +26,7 @@ require (
 	ariga.io/atlas v0.3.7-0.20220303204946-787354f533c3 // indirect
 	github.com/Knetic/govaluate v3.0.1-0.20171022003610-9aa49832a739+incompatible // indirect
 	github.com/agext/levenshtein v1.2.1 // indirect
+	github.com/antlr/antlr4 v0.0.0-20210105192202-5c2b686f95e1 // indirect
 	github.com/apparentlymart/go-textseg/v13 v13.0.0 // indirect
 	github.com/cespare/xxhash/v2 v2.1.1 // indirect
 	github.com/dustin/go-humanize v1.0.0 // indirect
@@ -34,8 +36,10 @@ require (
 	github.com/go-playground/locales v0.14.0 // indirect
 	github.com/go-playground/universal-translator v0.18.0 // indirect
 	github.com/goccy/go-json v0.9.7 // indirect
+	github.com/golang-collections/collections v0.0.0-20130729185459-604e922904d3 // indirect
 	github.com/golang/glog v0.0.0-20160126235308-23def4e6c14b // indirect
 	github.com/google/go-cmp v0.5.8 // indirect
+	github.com/google/martian v2.1.0+incompatible // indirect
 	github.com/google/uuid v1.3.0 // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect
 	github.com/hashicorp/hcl/v2 v2.10.0 // indirect

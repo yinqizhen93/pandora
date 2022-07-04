@@ -1,8 +1,8 @@
 package task
 
 import (
+	"context"
 	"fmt"
-	"github.com/gin-gonic/gin"
 	"pandora/db"
 	"pandora/ent/task"
 	"time"
@@ -24,13 +24,9 @@ func NewTask(name string, taskType task.Type, describe string, f func()) Task {
 	}
 }
 
-func (t *Task) Start(c *gin.Context) {
-	ctx := c.Request.Context()
+func (t *Task) Start(createdBy int) {
+	ctx := context.Background()
 	startTime := time.Now()
-	userId, ok := c.Get("userId")
-	if !ok {
-		panic("no current user")
-	}
 	tk, err := db.Client.Task.Create().
 		SetName(t.name).
 		SetType(t.taskType).
@@ -38,7 +34,7 @@ func (t *Task) Start(c *gin.Context) {
 		SetStartDate(startTime).
 		SetStatus(1).
 		SetCreatedAt(startTime).
-		SetCreatedBy(userId.(int)).
+		SetCreatedBy(createdBy).
 		Save(ctx)
 	if err != nil {
 		panic(err)

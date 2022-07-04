@@ -6,6 +6,7 @@ import (
 	"pandora/db"
 	"pandora/router"
 	"pandora/service"
+	"pandora/service/logger"
 )
 
 func main() {
@@ -16,8 +17,8 @@ func main() {
 }
 
 func init() {
-	InitConfig()
-	service.InitLogger()
+	InitConfig() // todo 初始化顺序有依赖关系，如何解决？
+	logger.InitLogger()
 	db.InitDB()
 	service.InitService()
 	router.InitRouter()

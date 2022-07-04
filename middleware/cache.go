@@ -6,6 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"golang.org/x/sync/singleflight"
 	"pandora/service/cache"
+	"pandora/service/logger"
 	"time"
 )
 
@@ -115,6 +116,7 @@ func CacheHandler(schema ...string) gin.HandlerFunc {
 						replyFromData(c, data)
 					}
 				} else {
+					logger.Error(fmt.Sprintf("cache singleflight 返回error:%+v", err))
 					// todo err != nil 的场景待添加
 					replyFromData(c, []byte("请求失败"))
 				}

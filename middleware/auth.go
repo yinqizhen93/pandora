@@ -38,7 +38,11 @@ func JWTAuthMiddleware() gin.HandlerFunc {
 			if ve, ok := err.(*jwt.ValidationError); ok {
 				if ve.Errors == jwt.ValidationErrorExpired { // token过期
 					if claims, ok := tk.Claims.(*service.Claims); ok {
-						if tokenCanRefresh(c.Request.Context(), claims.UserId) {
+						can, err := tokenCanRefresh(c.Request.Context(), claims.UserId)
+						if err != nil {
+							panic(err)
+						}
+						if can {
 							newToken, err := service.CreateToken(claims.UserId)
 							if err != nil {
 								panic(err)
@@ -85,12 +89,17 @@ func JWTAuth() gin.HandlerFunc {
 			if ve, ok := err.(*jwt.ValidationError); ok {
 				if ve.Errors == jwt.ValidationErrorExpired { // token过期
 					if claims, ok := tk.Claims.(*service.Claims); ok {
-						if tokenCanRefresh(c.Request.Context(), claims.UserId) {
+						can, err := tokenCanRefresh(c.Request.Context(), claims.UserId)
+						if err != nil {
+							panic(err)
+						}
+						if can {
 							newToken, err := service.CreateToken(claims.UserId)
 							if err != nil {
 								panic(err)
 							}
 							c.Header("x-refreshed-token", newToken)
+							c.Set("userId", claims.UserId) // token 过期也要设置userID
 							return
 						}
 					} else {
@@ -109,10 +118,14 @@ func JWTAuth() gin.HandlerFunc {
 	}
 }
 
-func tokenCanRefresh(ctx context.Context, id int) bool {
+func tokenCanRefresh(ctx context.Context, id int) (bool, error) {
 	user, err := db.Client.User.Get(ctx, id)
 	if err != nil {
-		panic(err)
+		return false, err
 	}
-	return !service.RefreshTokenExpired(user.RefreshToken)
+	ok, err := service.RefreshTokenExpired(user.RefreshToken)
+	if err != nil {
+		return ok, err
+	}
+	return !ok, nil
 }

@@ -2,7 +2,9 @@ package middleware
 
 import (
 	"context"
+	"fmt"
 	"github.com/gin-gonic/gin"
+	"github.com/pkg/errors"
 	"net/http"
 	"pandora/db"
 	"pandora/ent"
@@ -24,7 +26,11 @@ func AccessControl() gin.HandlerFunc {
 		if !ok {
 			panic("use do not exists")
 		}
-		subs := getRolesByUserId(ctx, id.(int))
+		subs, err := getRolesByUserId(ctx, id.(int))
+		if err != nil {
+			// todo 需要用fmt.Sprintf包裹一层吗
+			panic(fmt.Sprintf("getRolesByUserId error: %s", err)) // todo 过滤context超时错误
+		}
 		//判断策略中是否存在
 		for _, sub := range subs {
 			if ok, _ := service.Enforcer.Enforce(sub.Name, baseUrl, act); ok {
@@ -36,14 +42,14 @@ func AccessControl() gin.HandlerFunc {
 	}
 }
 
-func getRolesByUserId(ctx context.Context, id int) []*ent.Role {
+func getRolesByUserId(ctx context.Context, id int) ([]*ent.Role, error) {
 	user, err := db.Client.User.Get(ctx, id)
 	if err != nil {
-		panic(err) // todo 过滤超时错误
+		return nil, errors.Wrapf(err, "查询id=%d的用户失败", id)
 	}
 	roles, err := user.QueryRoles().All(ctx)
 	if err != nil {
-		panic(err) // todo 过滤超时错误
+		return nil, errors.Wrapf(err, "查询用户id=%d的角色失败", id)
 	}
-	return roles
+	return roles, nil
 }

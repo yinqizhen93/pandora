@@ -65,20 +65,20 @@ func CreateRefreshToken() string {
 
 //var TokenExpiredErr = errors.New("refresh token has expired")
 
-func RefreshTokenExpired(token string) bool {
+func RefreshTokenExpired(token string) (bool, error) {
 	var rt RefreshToken
 	byteToken, err := base64.URLEncoding.DecodeString(token)
 	if err != nil {
-		panic(err)
+		return false, errors.Wrap(err, "base64 DecodeString失败")
 	}
 	err = json.Unmarshal(byteToken, &rt)
 	if err != nil {
-		panic(err)
+		return false, errors.Wrap(err, "json Unmarshal失败")
 	}
 	if time.Unix(rt.ExpiresAt, 0).Before(time.Now()) {
-		return true
+		return true, nil
 	}
-	return false
+	return false, nil
 }
 
 // ParseToken 解析JWT

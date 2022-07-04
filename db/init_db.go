@@ -52,7 +52,7 @@ func removeCache(next ent.Mutator) ent.Mutator {
 		if err == nil { // todo 这里的错误会不会有不影响缓存更新的，
 			//if m.Op() >= 1 && m.Op() <= 5 {
 			// remove cache here
-			cache.Cache.DelBySchema(m.Type())
+			cache.Cache.DelBySchema(m.Type()) // todo 批量上传会导致缓存一直更新
 			//}
 		}
 		return value, err

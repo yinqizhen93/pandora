@@ -1,6 +1,7 @@
 package task
 
 import (
+	"context"
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/xuri/excelize/v2"
@@ -8,7 +9,7 @@ import (
 	"pandora/db"
 	"pandora/ent"
 	"pandora/ent/task"
-	"pandora/service"
+	"pandora/service/logger"
 	"strconv"
 	"time"
 )
@@ -64,16 +65,22 @@ func UploadStockOnce(c *gin.Context) {
 			}
 			bulk[ri] = sc
 		}
-		ctx := c.Request.Context()
+		//ctx := c.Request.Context()
+		// 此处不能使用c.Request.Context()，因为请求结束后context就reset了
+		ctx := context.Background()
 		_, err = db.Client.Stock.CreateBulk(bulk...).Save(ctx)
 		if err != nil {
 			fmt.Println(err)
-			service.Logger.Error(fmt.Sprintf("插入数据失败: %s", err))
+			logger.Error(fmt.Sprintf("插入数据失败: %s", err))
 		}
 	}
 
 	tk := NewTask("stock upload", task.Type("once"), "上传每日股票数据", upload)
-	go tk.Start(c)
+	createdBy, ok := c.Get("userId")
+	if !ok {
+		panic("no current user")
+	}
+	go tk.Start(createdBy.(int))
 	//fmt.Println(stocks)
 	resp := gin.H{
 		"code": "success",

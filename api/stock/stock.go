@@ -1,14 +1,16 @@
 package stock
 
 import (
+	"context"
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/xuri/excelize/v2"
+	"mime/multipart"
 	"pandora/api"
 	"pandora/db"
 	"pandora/ent"
 	"pandora/ent/stock"
-	"pandora/service"
+	"pandora/service/logger"
 	"pandora/utils"
 	"runtime/debug"
 	"strconv"
@@ -83,13 +85,13 @@ func GetStock(c *gin.Context) {
 	}
 	total, err := stockQuery.Count(ctx)
 	if err != nil {
-		service.Logger.Error(fmt.Sprintf("查询失败：%s; \n %s", err, debug.Stack()))
+		logger.Error(fmt.Sprintf("查询失败：%s; \n %s", err, debug.Stack()))
 		c.JSON(200, api.FailResponse(3002, "查询失败"))
 		return
 	}
 	stocks, err := stockQuery.Offset(offset).Limit(pageSize).Select().All(ctx)
 	if err != nil {
-		service.Logger.Error(fmt.Sprintf("查询失败：%s; \n %s", err, debug.Stack()))
+		logger.Error(fmt.Sprintf("查询失败：%s; \n %s", err, debug.Stack()))
 		c.JSON(200, api.FailResponse(3002, "查询失败"))
 		return
 	}
@@ -114,59 +116,64 @@ func UploadStock(c *gin.Context) {
 		c.JSON(200, api.FailResponse(3004, "打开上传文件失败"))
 		return
 	}
-	f, err := excelize.OpenReader(file)
-	if err != nil {
-		c.JSON(200, api.FailResponse(3004, "读取上传文件失败"))
-		return
-	}
-	go func() {
-		rows, err := f.GetRows("Sheet1")
-		header := rows[0]
-		bulk := make([]*ent.StockCreate, len(rows)-1)
-		for ri, r := range rows[1:] {
-			sc := db.Client.Stock.Create()
-			for i, c := range header {
-				switch c {
-				case "market":
-					sc.SetMarket(r[i])
-				case "code":
-					sc.SetCode(r[i])
-				case "name":
-					sc.SetName(r[i])
-				case "date":
-					sc.SetDate(strToDate(r[i]))
-				case "open":
-					sc.SetOpen(strToFloat32(r[i]))
-				case "close":
-					sc.SetClose(strToFloat32(r[i]))
-				case "high":
-					sc.SetHigh(strToFloat32(r[i]))
-				case "low":
-					sc.SetLow(strToFloat32(r[i]))
-				case "volume":
-					sc.SetVolume(strToInt32(r[i]))
-				case "outstanding_share":
-					sc.SetOutstandingShare(strToInt32(r[i]))
-				case "turnover":
-					sc.SetTurnover(strToFloat32(r[i]))
-				}
-			}
-			bulk[ri] = sc
-		}
-		ctx := c.Request.Context()
-		_, err = db.Client.Stock.CreateBulk(bulk...).Save(ctx)
-		if err != nil {
-			fmt.Println(err)
-			service.Logger.Error(fmt.Sprintf("插入数据失败: %s", err))
-		}
-	}()
-
-	//fmt.Println(stocks)
+	// todo 变成任务形式，可以看到成功还是失败
+	go uploadStockFromFile(file)
 	resp := gin.H{
 		"code": "success",
-		//"data": stocks,
 	}
 	c.JSON(200, resp)
+}
+
+func uploadStockFromFile(file multipart.File) error {
+	f, err := excelize.OpenReader(file)
+	if err != nil {
+		// todo handle error
+		return err
+	}
+	rows, err := f.GetRows("Sheet1")
+	header := rows[0]
+	bulk := make([]*ent.StockCreate, len(rows)-1)
+	for ri, r := range rows[1:] {
+		sc := db.Client.Stock.Create()
+		for i, c := range header {
+			switch c {
+			case "market":
+				sc.SetMarket(r[i])
+			case "code":
+				sc.SetCode(r[i])
+			case "name":
+				sc.SetName(r[i])
+			case "date":
+				sc.SetDate(strToDate(r[i]))
+			case "open":
+				sc.SetOpen(strToFloat32(r[i]))
+			case "close":
+				sc.SetClose(strToFloat32(r[i]))
+			case "high":
+				sc.SetHigh(strToFloat32(r[i]))
+			case "low":
+				sc.SetLow(strToFloat32(r[i]))
+			case "volume":
+				sc.SetVolume(strToInt32(r[i]))
+			case "outstanding_share":
+				sc.SetOutstandingShare(strToInt32(r[i]))
+			case "turnover":
+				sc.SetTurnover(strToFloat32(r[i]))
+			}
+		}
+		bulk[ri] = sc
+	}
+	//ctx := c.Request.Context()
+	// 此处不能使用c.Request.Context()，因为请求结束后context就reset了，除非copy 一个c
+	ctx := context.Background()
+	_, err = db.Client.Stock.CreateBulk(bulk...).Save(ctx)
+	if err != nil {
+		// todo handle error
+		fmt.Println(err)
+		logger.Error(fmt.Sprintf("插入数据失败: %s", err))
+		return err
+	}
+	return nil
 }
 
 func strToDate(val string) time.Time {
@@ -204,7 +211,7 @@ func DownloadStock(c *gin.Context) {
 	var udp UserDownloadParams
 	err := c.Bind(&udp)
 	if err != nil {
-		service.Logger.Error(fmt.Sprintf("参数错误：%s; \n %s", err, debug.Stack()))
+		logger.Error(fmt.Sprintf("参数错误：%s; \n %s", err, debug.Stack()))
 		c.JSON(200, api.FailResponse(3002, "参数错误"))
 		return
 	}
@@ -291,12 +298,12 @@ func DownloadStock(c *gin.Context) {
 		},
 	}
 	if xs, err := utils.NewXlsxStorage(file, tableHeader, stks); err != nil {
-		service.Logger.Error(fmt.Sprintf("生成XlsxStorage失败：%+v; \n %s", err, debug.Stack()))
+		logger.Error(fmt.Sprintf("生成XlsxStorage失败：%+v; \n %s", err, debug.Stack()))
 		c.JSON(200, api.FailResponse(3002, "生成XlsxStorage失败"))
 		return
 	} else {
 		if err := xs.WriteXlsx(); err != nil {
-			service.Logger.Error(fmt.Sprintf("生成XlsxStorage失败：%+v; \n %s", err, debug.Stack()))
+			logger.Error(fmt.Sprintf("生成XlsxStorage失败：%+v; \n %s", err, debug.Stack()))
 			c.JSON(200, api.FailResponse(3002, "生成XlsxStorage失败"))
 			return
 		}

@@ -8,6 +8,7 @@ import (
 	"pandora/db"
 	"pandora/ent/task"
 	"pandora/service"
+	"pandora/service/logger"
 	ws "pandora/service/websocket"
 	"runtime/debug"
 	"strconv"
@@ -58,13 +59,13 @@ func GetTask(c *gin.Context) {
 
 	total, err := stockQuery.Count(ctx)
 	if err != nil {
-		service.Logger.Error(fmt.Sprintf("查询失败：%s; \n %s", err, debug.Stack()))
+		logger.Error(fmt.Sprintf("查询失败：%s; \n %s", err, debug.Stack()))
 		c.JSON(200, api.FailResponse(3002, "查询失败"))
 		return
 	}
 	stocks, err := stockQuery.Offset(offset).Limit(pageSize).Select().All(ctx)
 	if err != nil {
-		service.Logger.Error(fmt.Sprintf("查询失败：%s; \n %s", err, debug.Stack()))
+		logger.Error(fmt.Sprintf("查询失败：%s; \n %s", err, debug.Stack()))
 		c.JSON(200, api.FailResponse(3002, "查询失败"))
 		return
 	}

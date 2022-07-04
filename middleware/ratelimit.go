@@ -18,6 +18,7 @@ func RateLimit() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		ctx := c.Request.Context()
 		if err := limiter.Wait(ctx); err != nil {
+
 			c.Status(http.StatusGatewayTimeout)
 			fmt.Println(err)
 			//if errors.Is(err, ctx.Err()) {
