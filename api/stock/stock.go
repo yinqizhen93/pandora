@@ -6,6 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/xuri/excelize/v2"
 	"mime/multipart"
+	"net/http"
 	"pandora/api"
 	"pandora/ent"
 	"pandora/ent/stock"
@@ -17,70 +18,31 @@ import (
 	"time"
 )
 
+type stockQuery struct {
+	Page      int       `form:"page" binding:"required"`
+	PageSize  int       `form:"pageSize" binding:"required"`
+	StartDate time.Time `form:"startDate" binding:"required" time_format:"2006-01-02"`
+	EndDate   time.Time `form:"endDate" binding:"required" time_format:"2006-01-02"`
+	SearchVal string    `form:"searchVal"`
+}
+
 func GetStock(c *gin.Context) {
-	//var req UserQueryParams
-	strPage, ok := c.GetQuery("page")
-	if !ok {
-		c.JSON(200, api.FailResponse(3002, "page参数缺失"))
+	var sq stockQuery
+	if err := c.ShouldBindQuery(&sq); err != nil {
+		c.JSON(http.StatusOK, api.FailResponse(1200, err.Error()))
 		return
 	}
-	page, err := strconv.Atoi(strPage)
-	if err != nil {
-		c.JSON(200, api.FailResponse(3002, "page参数错误"))
-		return
-	}
-
-	strPageSize, ok := c.GetQuery("pageSize")
-	if !ok {
-		c.JSON(200, api.FailResponse(3002, "pageSize参数缺失"))
-		return
-	}
-	pageSize, err := strconv.Atoi(strPageSize)
-	if err != nil {
-		c.JSON(200, api.FailResponse(3002, "pageSize参数错误"))
-		return
-	}
-
-	searchVal, ok := c.GetQuery("searchVal")
-	if !ok {
-		c.JSON(200, api.FailResponse(3002, "searchVal参数缺失"))
-		return
-	}
-
-	strStartDate, ok := c.GetQuery("startDate")
-	if !ok {
-		c.JSON(200, api.FailResponse(3002, "startDate参数缺失"))
-		return
-	}
-	startDate, err := time.Parse("2006-01-02", strStartDate)
-	if !ok {
-		c.JSON(200, api.FailResponse(3002, "searchVal参数缺失"))
-		return
-	}
-
-	strEndDate, ok := c.GetQuery("endDate")
-	if !ok {
-		c.JSON(200, api.FailResponse(3002, "endDate参数缺失"))
-		return
-	}
-	endDate, err := time.Parse("2006-01-02", strEndDate)
-	if !ok {
-		c.JSON(200, api.FailResponse(3002, "searchVal参数缺失"))
-		return
-	}
-
 	ctx := c.Request.Context()
-
-	offset := (page - 1) * pageSize
+	offset := (sq.Page - 1) * sq.PageSize
 	stockQuery := db.Client.Stock.Query().Where(stock.And(
-		stock.DateGTE(startDate),
-		stock.DateLTE(endDate),
+		stock.DateGTE(sq.StartDate),
+		stock.DateLTE(sq.EndDate),
 	))
-	if searchVal != "" {
+	if sq.SearchVal != "" {
 		stockQuery = stockQuery.Where(
 			stock.Or(
-				stock.CodeContains(searchVal),
-				stock.NameContains(searchVal),
+				stock.CodeContains(sq.SearchVal),
+				stock.NameContains(sq.SearchVal),
 			))
 	}
 	total, err := stockQuery.Count(ctx)
@@ -89,14 +51,12 @@ func GetStock(c *gin.Context) {
 		c.JSON(200, api.FailResponse(3002, "查询失败"))
 		return
 	}
-	stocks, err := stockQuery.Offset(offset).Limit(pageSize).Select().All(ctx)
+	stocks, err := stockQuery.Offset(offset).Limit(sq.PageSize).Select().All(ctx)
 	if err != nil {
 		logger.Error(fmt.Sprintf("查询失败：%s; \n %s", err, debug.Stack()))
 		c.JSON(200, api.FailResponse(3002, "查询失败"))
 		return
 	}
-
-	//fmt.Println(stocks)
 	resp := gin.H{
 		"success": true,
 		"data":    stocks,
