@@ -22,6 +22,7 @@ func init() {
 	db.InitDB()
 	service.InitService()
 	router.InitRouter()
+	//validate.RegisterValidator()
 }
 
 func InitConfig() {

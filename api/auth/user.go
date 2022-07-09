@@ -6,7 +6,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"pandora/api"
 	"pandora/ent/user"
-	"pandora/service"
 	"pandora/service/db"
 	"pandora/service/logger"
 	"runtime/debug"
@@ -49,23 +48,23 @@ func GetCurrentUser(c *gin.Context) {
 }
 
 type UserRequest struct {
-	Username string `json:"username" validate:"required"`
-	Password string `json:"password" validate:"required"`
-	Email    string `json:"email" validate:"required"`
+	Username string `json:"username" binding:"required"`
+	Password string `json:"password" binding:"required"`
+	Email    string `json:"email" binding:"required,email"`
 }
 
 func CreateUser(c *gin.Context) {
 	var ur UserRequest
-	if err := c.Bind(&ur); err != nil {
-		logger.Error(fmt.Sprintf("请求参数解析失败：%s; \n %s", err, debug.Stack()))
-		c.JSON(200, api.FailResponse(1001, "请求参数解析失败"))
+	if err := c.ShouldBind(&ur); err != nil {
+		logger.Error(fmt.Sprintf("参数错误\"：%s; \n %s", err, debug.Stack()))
+		c.JSON(200, api.FailResponse(1001, "参数错误"))
 	}
 
-	if err := service.Valid.Struct(ur); err != nil {
-		logger.Error(fmt.Sprintf("请求参数有错误：%s; \n %s", err, debug.Stack()))
-		c.JSON(200, api.FailResponse(1001, "请求参数错误"))
-		return
-	}
+	//if err := service.Valid.Struct(ur); err != nil {
+	//	logger.Error(fmt.Sprintf("请求参数有错误：%s; \n %s", err, debug.Stack()))
+	//	c.JSON(200, api.FailResponse(1001, "请求参数错误"))
+	//	return
+	//}
 	ctx := c.Request.Context()
 	u, err := db.Client.User.Create().
 		SetUsername(ur.Username).

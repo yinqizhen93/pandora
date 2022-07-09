@@ -24,7 +24,7 @@ type stockQuery struct {
 	PageSize  int       `form:"pageSize" binding:"required"`
 	StartDate time.Time `form:"startDate" binding:"required,ltefield=EndDate" time_format:"2006-01-02"`
 	EndDate   time.Time `form:"endDate" binding:"required" time_format:"2006-01-02"`
-	SearchVal string    `form:"searchVal"`
+	SearchVal string    `form:"searchVal" binding:"required,dateFormat"`
 }
 
 func GetStock(c *gin.Context) {

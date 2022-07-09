@@ -1,14 +1,14 @@
-package validat
+package validate
 
 import (
 	"github.com/gin-gonic/gin/binding"
 	"github.com/go-playground/validator/v10"
-	"time"
 )
 
 func dateFormat(fl validator.FieldLevel) bool {
-	if _, ok := fl.Field().Interface().(time.Time); ok {
-		return false
+
+	if fl.Field().String() == "111" {
+		return true
 	} else {
 		return false
 	}
