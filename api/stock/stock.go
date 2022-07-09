@@ -18,10 +18,11 @@ import (
 	"time"
 )
 
+// time_format:"2006-01-02" validate 只在tag form 里面起作用，tag json里不起作用
 type stockQuery struct {
-	Page      int       `form:"page" binding:"required"`
+	Page      int       `form:"page" binding:"required,gte=1"`
 	PageSize  int       `form:"pageSize" binding:"required"`
-	StartDate time.Time `form:"startDate" binding:"required" time_format:"2006-01-02"`
+	StartDate time.Time `form:"startDate" binding:"required,ltefield=EndDate" time_format:"2006-01-02"`
 	EndDate   time.Time `form:"endDate" binding:"required" time_format:"2006-01-02"`
 	SearchVal string    `form:"searchVal"`
 }
@@ -161,40 +162,32 @@ func strToInt32(val string) int32 {
 	return int32(v)
 }
 
-type UserDownloadParams struct {
-	SearchVal string `json:"searchVal"`
-	StartDate string `json:"startDate" binding:"required"`
-	EndDate   string `json:"endDate" binding:"required"`
+// json.Unmarshal 反序列化类似"2020-01-01"格式日期 , 会出错, 只能识别RFC3339格式日期
+// 使用 utils.LocalTime 替代
+// 另外一种方法是，将日期字段定义为string ，使用binding:datetime 检验格式， 在使用时，将string类型转为time.Time类型
+type userDownload struct {
+	SearchVal string          `json:"searchVal"`
+	StartDate utils.LocalTime `json:"startDate" binding:"required"`
+	EndDate   utils.LocalTime `json:"endDate" binding:"required"`
 }
 
 func DownloadStock(c *gin.Context) {
-	var udp UserDownloadParams
-	err := c.Bind(&udp)
+	var ud userDownload
+	err := c.ShouldBindJSON(&ud)
 	if err != nil {
 		logger.Error(fmt.Sprintf("参数错误：%s; \n %s", err, debug.Stack()))
 		c.JSON(200, api.FailResponse(3002, "参数错误"))
 		return
 	}
-	startDate, err := time.Parse("2006-01-02", udp.StartDate)
-	if err != nil {
-		c.JSON(200, api.FailResponse(3002, "startDate参数错误"))
-		return
-	}
-	endDate, err := time.Parse("2006-01-02", udp.EndDate)
-	if err != nil {
-		c.JSON(200, api.FailResponse(3002, "endDate参数错误"))
-		return
-	}
-
 	stockQuery := db.Client.Stock.Query().Where(stock.And(
-		stock.DateGTE(startDate),
-		stock.DateLTE(endDate),
+		stock.DateGTE(time.Time(ud.StartDate)),
+		stock.DateLTE(time.Time(ud.EndDate)),
 	))
-	if udp.SearchVal != "" {
+	if ud.SearchVal != "" {
 		stockQuery = stockQuery.Where(
 			stock.Or(
-				stock.CodeContains(udp.SearchVal),
-				stock.NameContains(udp.SearchVal),
+				stock.CodeContains(ud.SearchVal),
+				stock.NameContains(ud.SearchVal),
 			))
 	}
 	ctx := c.Request.Context()
