@@ -7,8 +7,10 @@ import (
 )
 
 type XlsxStorage struct {
-	file    *excelize.File
-	header  []TableHeader
+	file *excelize.File
+	//export store the index of "export field" in struct,
+	//"export field"指没有export的key 或者export 值为 "-"
+	export  []int
 	data    []any
 	nr      int
 	nc      int
@@ -16,30 +18,33 @@ type XlsxStorage struct {
 	rowKind reflect.Kind
 }
 
-type TableHeader struct {
-	StructFieldName string
-	XlsxColName     string
-}
-
-func NewXlsxStorage(file *excelize.File, header []TableHeader, data []any) (*XlsxStorage, error) {
+func NewXlsxStorage(file *excelize.File, data []any) (*XlsxStorage, error) {
+	var nc int
 	nr := len(data)
 	if nr == 0 {
 		return nil, errors.New("data can not be empty")
 	}
-	nc := len(header)
-	if nc == 0 {
-		return nil, errors.New("header can not be empty")
-	}
 	// 以数据第一行类型为准
 	t := reflect.TypeOf(data[0])
+	k := t.Kind()
+	if k == reflect.Pointer { // 反射类型t为指针，t.Elem()则为pointer指向的Type
+		t = t.Elem()
+		if t.Kind() != reflect.Struct {
+			return nil, errors.New("data can only be []slice or []struct or []*struct")
+		}
+	}
+	nc = t.NumField()
+	if nc == 0 {
+		return nil, errors.New("struct can not be empty")
+	}
 	xs := XlsxStorage{
 		file:    file,
-		header:  header,
 		data:    data,
+		export:  make([]int, 0),
 		nr:      nr,
 		nc:      nc,
 		rowType: t,
-		rowKind: t.Kind(),
+		rowKind: k,
 	}
 	return &xs, nil
 }
@@ -56,9 +61,6 @@ func (f *XlsxStorage) WriteXlsx() error {
 			return err
 		}
 	case reflect.Ptr:
-		if f.rowType.Elem().Kind() != reflect.Struct {
-			return errors.New("data can only be []slice or []struct or []*struct")
-		}
 		if err := f.WriteStructToXlsx(); err != nil {
 			return err
 		}
@@ -72,15 +74,26 @@ func (f *XlsxStorage) WriteXlsx() error {
 	return nil
 }
 
+// WriteHeader 从struct tag 获取table header, tag 标识为"export", 如果值为"-"，则代表不导出
 func (f *XlsxStorage) WriteHeader() error {
 	// 写入表头
 	cell, err := excelize.CoordinatesToCellName(1, 1)
 	if err != nil {
 		return errors.Wrap(err, "tableHeader excelize.CoordinatesToCellName失败")
 	}
-	header := make([]string, len(f.header))
-	for i, h := range f.header {
-		header[i] = h.XlsxColName
+	header := make([]string, 0)
+	for i := 0; i < f.nc; i++ {
+		tag := f.rowType.Field(i).Tag.Get("export")
+		// tag 没有 export的key 或者export 值为 "-",则标识不导出
+		if tag == "-" || tag == "" {
+			continue
+		}
+		f.export = append(f.export, i)
+		header = append(header, tag)
+	}
+	// 必须至少一个字段是导出的
+	if len(header) == 0 {
+		return errors.Wrap(err, "no field is export")
 	}
 	if err = f.file.SetSheetRow("Sheet1", cell, &header); err != nil {
 		return errors.Wrap(err, "tableHeader file.SetSheetRow失败")
@@ -89,29 +102,14 @@ func (f *XlsxStorage) WriteHeader() error {
 }
 
 func (f *XlsxStorage) WriteStructToXlsx() error {
-	t := f.rowType
-	if f.rowKind == reflect.Pointer { // 反射类型t为指向Struct指针，t.Elem()则为pointer指向的Type
-		t = t.Elem()
-	}
-	n := t.NumField()
-	// m 存储struct里filed name-> index 映射
-	m := make(map[string]int)
-	for i := 0; i < n; i++ {
-		m[t.Field(i).Name] = i
-	}
 	for r := 0; r < f.nr; r++ {
 		v := reflect.ValueOf(f.data[r])
 		if f.rowKind == reflect.Pointer { // 反射类型v为指针，v.Elem()则为pointer指向的Value
 			v = v.Elem()
 		}
-		row := make([]any, f.nc)
-		// 匹配header, fieldName都不匹配则为""
-		for i, head := range f.header {
-			if idx, ok := m[head.StructFieldName]; ok {
-				row[i] = v.FieldByIndex([]int{idx})
-			} else {
-				row[i] = "null"
-			}
+		row := make([]any, len(f.export))
+		for i, idx := range f.export {
+			row[i] = v.FieldByIndex([]int{idx})
 		}
 		cell, err := excelize.CoordinatesToCellName(1, r+2) //从第二行开始写入
 		if err != nil {

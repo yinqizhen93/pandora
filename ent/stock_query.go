@@ -254,7 +254,7 @@ func (sq *StockQuery) Clone() *StockQuery {
 // Example:
 //
 //	var v []struct {
-//		Market string `json:"market,omitempty"`
+//		Market string `json:"market,omitempty" export:"市场"`
 //		Count int `json:"count,omitempty"`
 //	}
 //
@@ -281,7 +281,7 @@ func (sq *StockQuery) GroupBy(field string, fields ...string) *StockGroupBy {
 // Example:
 //
 //	var v []struct {
-//		Market string `json:"market,omitempty"`
+//		Market string `json:"market,omitempty" export:"市场"`
 //	}
 //
 //	client.Stock.Query().

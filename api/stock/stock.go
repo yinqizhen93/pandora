@@ -24,7 +24,7 @@ type stockQuery struct {
 	PageSize  int       `form:"pageSize" binding:"required"`
 	StartDate time.Time `form:"startDate" binding:"required,ltefield=EndDate" time_format:"2006-01-02"`
 	EndDate   time.Time `form:"endDate" binding:"required" time_format:"2006-01-02"`
-	SearchVal string    `form:"searchVal" binding:"required,dateFormat"`
+	SearchVal string    `form:"searchVal"`
 }
 
 func GetStock(c *gin.Context) {
@@ -200,57 +200,7 @@ func DownloadStock(c *gin.Context) {
 		stks[i] = s
 	}
 	file := excelize.NewFile()
-	tableHeader := []utils.TableHeader{
-		{
-			"ID",
-			"ID",
-		},
-		{
-			"Market",
-			"市场",
-		},
-		{
-			"Code",
-			"股票代码",
-		},
-		{
-			"Name",
-			"股票简称",
-		},
-		{
-			"Date",
-			"日期",
-		},
-		{
-			"Open",
-			"开盘价",
-		},
-		{
-			"Close",
-			"收盘价",
-		},
-		{
-			"High",
-			"最高价",
-		},
-		{
-			"Low",
-			"最低价",
-		},
-		{
-			"Volume",
-			"成交量",
-		},
-		{
-			"OutstandingShare",
-			"流通量",
-		},
-		{
-			"Turnover",
-			"换手率",
-		},
-	}
-	if xs, err := utils.NewXlsxStorage(file, tableHeader, stks); err != nil {
+	if xs, err := utils.NewXlsxStorage(file, stks); err != nil {
 		logger.Error(fmt.Sprintf("生成XlsxStorage失败：%+v; \n %s", err, debug.Stack()))
 		c.JSON(200, api.FailResponse(3002, "生成XlsxStorage失败"))
 		return

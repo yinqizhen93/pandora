@@ -13,29 +13,29 @@ import (
 
 // Stock is the model entity for the Stock schema.
 type Stock struct {
-	config `json:"-"`
+	config `export:"-" json:"-"`
 	// ID of the ent.
 	ID int `json:"id,omitempty"`
 	// Market holds the value of the "market" field.
-	Market string `json:"market,omitempty"`
+	Market string `json:"market,omitempty" export:"市场"`
 	// Code holds the value of the "code" field.
-	Code string `json:"code,omitempty"`
+	Code string `json:"code,omitempty" export:"股票代码"`
 	// Name holds the value of the "name" field.
-	Name string `json:"name,omitempty"`
+	Name string `json:"name,omitempty" export:"股票简称"`
 	// Date holds the value of the "date" field.
-	Date time.Time `json:"date,omitempty"`
+	Date time.Time `json:"date,omitempty" export:"日期"`
 	// Open holds the value of the "open" field.
-	Open float32 `json:"open,omitempty"`
+	Open float32 `json:"open,omitempty" export:"开盘价"`
 	// Close holds the value of the "close" field.
-	Close float32 `json:"close,omitempty"`
+	Close float32 `json:"close,omitempty" export:"收盘价"`
 	// High holds the value of the "high" field.
-	High float32 `json:"high,omitempty"`
+	High float32 `json:"high,omitempty" export:"最高价"`
 	// Low holds the value of the "low" field.
-	Low float32 `json:"low,omitempty"`
+	Low float32 `json:"low,omitempty" export:"最低价"`
 	// Volume holds the value of the "volume" field.
-	Volume int32 `json:"volume,omitempty"`
+	Volume int32 `json:"volume,omitempty" export:"-"`
 	// OutstandingShare holds the value of the "outstandingShare" field.
-	OutstandingShare int32 `json:"outstandingShare,omitempty"`
+	OutstandingShare int32 `json:"outstandingShare,omitempty" export:"流通量"`
 	// Turnover holds the value of the "turnover" field.
 	Turnover float32 `json:"turnover,omitempty"`
 }

@@ -16,16 +16,16 @@ func (Stock) Fields() []ent.Field {
 	return []ent.Field{
 		field.String("market").SchemaType(map[string]string{
 			dialect.MySQL: "char(4)",
-		}),
-		field.String("code"),
-		field.String("name"),
-		field.Time("date"),
-		field.Float32("open"),
-		field.Float32("close"),
-		field.Float32("high"),
-		field.Float32("low"),
-		field.Int32("volume"),
-		field.Int32("outstandingShare").StorageKey("outstanding_share"),
+		}).StructTag(`export:"市场"`),
+		field.String("code").StructTag(`export:"股票代码"`),
+		field.String("name").StructTag(`export:"股票简称"`),
+		field.Time("date").StructTag(`export:"日期"`),
+		field.Float32("open").StructTag(`export:"开盘价"`),
+		field.Float32("close").StructTag(`export:"收盘价"`),
+		field.Float32("high").StructTag(`export:"最高价"`),
+		field.Float32("low").StructTag(`export:"最低价"`),
+		field.Int32("volume").StructTag(`export:"-"`),
+		field.Int32("outstandingShare").StorageKey("outstanding_share").StructTag(`export:"流通量"`),
 		field.Float32("turnover"),
 	}
 }
