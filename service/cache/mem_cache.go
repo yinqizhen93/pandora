@@ -5,18 +5,18 @@ import (
 	"github.com/dgraph-io/ristretto"
 )
 
-var Cache *MemCache
-
-func InitCache() {
-	Cache = NewMemCache()
-}
+//var Cache *MemCache
+//
+//func InitCache() {
+//	Cache = NewMemCache()
+//}
 
 type MemCache struct {
 	Cache *ristretto.Cache
 	urls  map[string][]string // url :[]schema
 }
 
-//var Cache *ristretto.Cache
+var _ Cacher = &MemCache{}
 
 func NewMemCache() *MemCache {
 	cache, err := ristretto.NewCache(&ristretto.Config{

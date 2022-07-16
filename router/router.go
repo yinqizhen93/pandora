@@ -4,9 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/google/wire"
 	"pandora/api/handler"
-	"pandora/api/task"
 	mdw "pandora/middleware"
-
 	"pandora/service"
 	ws "pandora/service/websocket"
 )
@@ -93,7 +91,7 @@ func (ar *AppRouter) addTaskRouter() {
 func (ar *AppRouter) addSSERouter() {
 	r := ar.router.Group("/sse", ar.mdw.JWTAuth(), service.Stream.SSEHandler(), ar.mdw.SSEHeaderMiddleware()) // JWTAuth授权
 	{
-		r.GET("/task", task.StartTaskSSE)
+		r.GET("/task", ar.handler.StartTaskSSE)
 	}
 }
 

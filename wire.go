@@ -8,10 +8,19 @@ import (
 	"pandora/api/handler"
 	mdw "pandora/middleware"
 	"pandora/router"
+	"pandora/service/cache"
 	"pandora/service/db"
 	"pandora/service/logger"
 )
 
 func initApp(addr ...string) *App {
-	panic(wire.Build(db.ProviderSet, logger.ProviderSet, handler.ProviderSet, router.ProviderSet, mdw.ProviderSet, NewApp))
+	panic(wire.Build(
+		db.ProviderSet,
+		logger.ProviderSet,
+		handler.ProviderSet,
+		router.ProviderSet,
+		mdw.ProviderSet,
+		cache.ProviderSet,
+		NewApp,
+	))
 }

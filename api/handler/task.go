@@ -3,8 +3,8 @@ package handler
 import (
 	"context"
 	"fmt"
+	"pandora/ent"
 	"pandora/ent/task"
-	"pandora/service/db"
 	"time"
 )
 
@@ -24,10 +24,10 @@ func NewTask(name string, taskType task.Type, describe string, f func()) Task {
 	}
 }
 
-func (t *Task) Start(createdBy int) {
+func (t *Task) Start(db *ent.Client, createdBy int) {
 	ctx := context.Background()
 	startTime := time.Now()
-	tk, err := db.Client.Task.Create().
+	tk, err := db.Task.Create().
 		SetName(t.name).
 		SetType(t.taskType).
 		SetDescribe(t.describe).

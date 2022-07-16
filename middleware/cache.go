@@ -51,7 +51,10 @@ func WithSchemas(schemas ...string) OptionFunc {
 //}
 
 // CacheWithOpt 带超时限制，不建议使用
-func (*Middleware) CacheWithOpt(opts ...OptionFunc) gin.HandlerFunc {
+func (mdw *Middleware) CacheWithOpt(opts ...OptionFunc) gin.HandlerFunc {
+	if mdw.cache == nil {
+		mdw.cache = cache.NewMemCache()
+	}
 	return func(c *gin.Context) {
 		if c.Request.Method == "GET" {
 			opt := defaultCacheOption
@@ -59,11 +62,11 @@ func (*Middleware) CacheWithOpt(opts ...OptionFunc) gin.HandlerFunc {
 				o(&opt)
 			}
 			url := c.Request.URL.RequestURI()
-			if data, ok := cache.Cache.Get(url); ok {
+			if data, ok := mdw.cache.Get(url); ok {
 				replyFromData(c, data)
 			} else {
 				writer := cacheWriter{key: url, ResponseWriter: c.Writer}
-				ch := sf.DoChan(url, fnWrapper(c, opt.schemas, url, &writer))
+				ch := sf.DoChan(url, mdw.fnWrapper(c, opt.schemas, url, &writer))
 				if opt.timeout <= 0 {
 					select {
 					case result := <-ch:
@@ -101,15 +104,18 @@ func (*Middleware) CacheWithOpt(opts ...OptionFunc) gin.HandlerFunc {
 
 // CacheHandler 不带超时限制, 仅缓存GET请求和json返回
 func (mdw *Middleware) CacheHandler(schema ...string) gin.HandlerFunc {
+	if mdw.cache == nil {
+		mdw.cache = cache.NewMemCache()
+	}
 	return func(c *gin.Context) {
 		if c.Request.Method == "GET" {
 			url := c.Request.URL.RequestURI()
-			if data, ok := cache.Cache.Get(url); ok {
+			if data, ok := mdw.cache.Get(url); ok {
 				replyFromData(c, data)
 			} else {
 				writer := cacheWriter{key: url, ResponseWriter: c.Writer}
 				// 一个goroutine panic, 其他goroutine也panic， 然后都被recovery middleware 捕获
-				data, err, _ := sf.Do(url, fnWrapper(c, schema, url, &writer))
+				data, err, _ := sf.Do(url, mdw.fnWrapper(c, schema, url, &writer))
 				if err == nil {
 					// singleflight 阻塞的其他请求, 其cache未初始化，直接返回从singleflight获取的返回值
 					if writer.cache == nil {
@@ -126,7 +132,7 @@ func (mdw *Middleware) CacheHandler(schema ...string) gin.HandlerFunc {
 }
 
 // fnWrapper 返回singleflight参数fn， 负责执行请求和更新缓存
-func fnWrapper(c *gin.Context, schema []string, url string, writer *cacheWriter) func() (interface{}, error) {
+func (mdw *Middleware) fnWrapper(c *gin.Context, schema []string, url string, writer *cacheWriter) func() (interface{}, error) {
 	return func() (interface{}, error) {
 		// 为避免一个网络波动等造成查询的goroutine失败，而使得依赖该goroutine的其他goroutine都失败，
 		// 每100ms， 就会有一个新的goroutine去请求
@@ -145,7 +151,7 @@ func fnWrapper(c *gin.Context, schema []string, url string, writer *cacheWriter)
 				panic(fmt.Sprintf("Unmarshal writer.cache fail: %s", err))
 			}
 			if rs.Success { // 请求返回success，更新缓存
-				cache.Cache.Set(schema, url, writer.cache, 1)
+				mdw.cache.Set(schema, url, writer.cache, 1)
 			}
 		}
 		return writer.cache, nil

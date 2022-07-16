@@ -78,7 +78,7 @@ func (h *Handler) UploadStockOnce(c *gin.Context) {
 	if !ok {
 		panic("no current user")
 	}
-	go tk.Start(createdBy.(int))
+	go tk.Start(h.db, createdBy.(int))
 	//fmt.Println(stocks)
 	resp := gin.H{
 		"code": "success",

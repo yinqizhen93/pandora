@@ -10,6 +10,7 @@ import (
 	"pandora/api/handler"
 	"pandora/middleware"
 	"pandora/router"
+	"pandora/service/cache"
 	"pandora/service/db"
 	"pandora/service/logger"
 )
@@ -19,7 +20,8 @@ import (
 func initApp(addr ...string) *App {
 	engine := router.NewEngine()
 	loggerLogger := logger.NewLogger()
-	client := db.NewEntClient()
+	cacher := cache.NewCacher()
+	client := db.NewEntClient(cacher)
 	handlerHandler := handler.NewHandler(loggerLogger, client)
 	middlewareMiddleware := middleware.NewMiddleware(loggerLogger, client)
 	appRouter := router.NewAppRouter(engine, handlerHandler, middlewareMiddleware)
