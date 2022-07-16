@@ -25,7 +25,7 @@ type timeoutWriter struct {
 
 // TimeOut 应该放在其他中间件的前面，避免writer被修改，
 // 每次请求不管是否超时都会多出一个timeoutWriter结构占用内存，只能等待gc清除
-func TimeOut(t int) gin.HandlerFunc {
+func (mdw *Middleware) TimeOut(t int) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		ctx, cancel := context.WithTimeout(c.Request.Context(), time.Duration(t)*time.Millisecond)
 		defer cancel()

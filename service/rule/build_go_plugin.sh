@@ -1,0 +1,1 @@
+go build -buildmode=plugin -o data_struct.so data_struct.go

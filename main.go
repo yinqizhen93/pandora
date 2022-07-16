@@ -4,13 +4,29 @@ import (
 	"fmt"
 	"github.com/spf13/viper"
 	"pandora/router"
-	"pandora/service"
-	"pandora/service/db"
-	"pandora/service/logger"
 )
 
+type App struct {
+	addr   []string
+	router *router.AppRouter
+}
+
+func NewApp(ae *router.AppRouter, addr ...string) *App {
+	return &App{
+		addr:   addr,
+		router: ae,
+	}
+}
+
+func (a App) run() error {
+	return a.router.Run(a.addr...)
+}
+
 func main() {
-	err := router.Router.Run(":5001")
+	//err := router.Router.Run(":5001")
+	addr := ":5001"
+	app := initApp(addr)
+	err := app.run()
 	if err != nil {
 		panic(err)
 	}
@@ -18,10 +34,10 @@ func main() {
 
 func init() {
 	InitConfig() // todo 初始化顺序有依赖关系，如何解决？
-	logger.InitLogger()
-	db.InitDB()
-	service.InitService()
-	router.InitRouter()
+	//logger.InitLogger()
+	//db.InitDB()
+	//service.InitService()
+	//router.InitRouter()
 	//validate.RegisterValidator()
 }
 

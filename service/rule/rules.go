@@ -8,22 +8,22 @@ const rule1 = `
 		if mr.MedicalType != cond.MedicalType {
 			return
 		} 
-		if mr.ContainsAnyItem(cond.ItemsCode){
-			rst.MatchSuccess = true
-			rst.Rules = appendStr(rst.Rules, @name)
-		}
+		//if mr.ContainsAnyItem(cond.ItemsCode){
+		//	rst.MatchSuccess = true
+		//	rst.Rules = appendStr(rst.Rules, @name)
+		//}
 	end
 
 	rule "MedicalRecord2"  "MedicalRecord ItemCode包含Condition Items的任何一个" salience 1
 	begin
 		print(2)
-		if mr.MedicalType != cond.MedicalType {
+		if par1.MedicalType != par2.MedicalType {
 			return
 		} 
-		if mr.ContainsAnyItem(cond.ItemsCode){
-			rst.MatchSuccess = true
-			rst.Rules = appendStr(rst.Rules, @name)
-		} 
+		//if mr.ContainsAnyItem(cond.ItemsCode){
+		//	rst.MatchSuccess = true
+		//	rst.Rules = appendStr(rst.Rules, @name)
+		//} 
 	end
 
 	rule "MedicalRecordFor3"  "MedicalRecord ItemCode包含Condition Items的任何一个" salience 0

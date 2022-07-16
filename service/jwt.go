@@ -6,7 +6,7 @@ import (
 	"encoding/json"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/pkg/errors"
-	"pandora/service/db"
+	"pandora/ent"
 	"time"
 )
 
@@ -47,8 +47,8 @@ type RefreshToken struct {
 	AutoRefresh bool
 }
 
-func SaveRefreshToken(ctx context.Context, id int, rt string) {
-	db.Client.User.UpdateOneID(id).SetRefreshToken(rt).SaveX(ctx)
+func SaveRefreshToken(ctx context.Context, db *ent.Client, id int, rt string) {
+	db.User.UpdateOneID(id).SetRefreshToken(rt).SaveX(ctx)
 }
 
 func CreateRefreshToken() string {

@@ -2,7 +2,7 @@ package middleware
 
 import "github.com/gin-gonic/gin"
 
-func SSEHeaderMiddleware() gin.HandlerFunc {
+func (*Middleware) SSEHeaderMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		//c.Header("Content-Type", "text/event-stream")
 		//c.Header("Cache-Control", "no-cache")

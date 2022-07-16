@@ -2,78 +2,104 @@ package router
 
 import (
 	"github.com/gin-gonic/gin"
-	"pandora/api/auth"
-	"pandora/api/stock"
+	"github.com/google/wire"
+	"pandora/api/handler"
 	"pandora/api/task"
 	mdw "pandora/middleware"
+
 	"pandora/service"
 	ws "pandora/service/websocket"
 )
 
-var Router = gin.Default()
+//var Router = gin.Default()
 
 //var Router = gin.New()
 
-func InitRouter() {
-	addLoginRouter()
-	addAuthRouter()
-	addStockRouter()
-	addTaskRouter()
-	addSSERouter()
-	addWSRouter()
+var ProviderSet = wire.NewSet(NewEngine, NewAppRouter)
+
+type AppRouter struct {
+	router  *gin.Engine
+	handler *handler.Handler
+	mdw     *mdw.Middleware
 }
 
-func addLoginRouter() {
-	Router.POST("/login", auth.Login)
+func NewEngine() *gin.Engine {
+	return gin.Default()
 }
 
-func addAuthRouter() {
-	r := Router.Group("/auth", mdw.JWTAuthMiddleware())
+func NewAppRouter(router *gin.Engine, handler *handler.Handler, mdw *mdw.Middleware) *AppRouter {
+	return &AppRouter{
+		router:  router,
+		handler: handler,
+		mdw:     mdw,
+	}
+}
+
+func (ar *AppRouter) Run(addr ...string) error {
+	ar.InitRouter()
+	return ar.router.Run(addr...)
+}
+
+func (ar *AppRouter) InitRouter() {
+	ar.addLoginRouter()
+	ar.addAuthRouter()
+	ar.addStockRouter()
+	ar.addTaskRouter()
+	ar.addSSERouter()
+	ar.addWSRouter()
+}
+
+func (ar *AppRouter) addLoginRouter() {
+	ar.router.POST("/login", ar.handler.Login)
+}
+
+func (ar *AppRouter) addAuthRouter() {
+	r := ar.router.Group("/auth", ar.mdw.JWTAuthMiddleware())
 	{
-		r.GET("/currentUser", auth.GetCurrentUser)
+		r.GET("/currentUser", ar.handler.GetCurrentUser)
 		//r.POST("/login", auth.Login)
 		// 重定向
 		r.POST("/register", func(c *gin.Context) {
 			c.Request.URL.Path = "/auth/users"
-			Router.HandleContext(c)
+			ar.router.HandleContext(c)
 		})
-		user := r.Group("/users", mdw.CacheHandler("User"))
+		user := r.Group("/users", ar.mdw.CacheHandler("User"))
 		{
-			user.GET("/", auth.GetUser)
-			user.POST("/", auth.CreateUser)
-			user.PUT("/:id", auth.UpdateUser)
-			user.DELETE("/:id", auth.DeleteUser)
+			user.GET("/", ar.handler.GetUser)
+			user.POST("/", ar.handler.CreateUser)
+			user.PUT("/:id", ar.handler.UpdateUser)
+			user.DELETE("/:id", ar.handler.DeleteUser)
 		}
 	}
 }
 
-func addStockRouter() {
-	r := Router.Group("/stocks", mdw.JWTAuthMiddleware())
+func (ar *AppRouter) addStockRouter() {
+	r := ar.router.Group("/stocks", ar.mdw.JWTAuthMiddleware())
 	{
-		r.GET("/daily", mdw.TimeOut(2000), mdw.RateLimit(), mdw.AccessControl(), mdw.CacheHandler("Stock"), stock.GetStock)
-		r.POST("/daily/upload", stock.UploadStock)
-		r.POST("/daily/download", stock.DownloadStock)
+		r.GET("/daily", ar.mdw.TimeOut(2000), ar.mdw.RateLimit(), ar.mdw.AccessControl(), ar.mdw.CacheHandler("Stock"), ar.handler.GetStock)
+		r.POST("/daily/upload", ar.handler.UploadStock)
+		r.POST("/daily/download", ar.handler.DownloadStock)
 	}
 }
 
-func addTaskRouter() {
-	r := Router.Group("/tasks", mdw.JWTAuthMiddleware())
+func (ar *AppRouter) addTaskRouter() {
+	r := ar.router.Group("/tasks", ar.mdw.JWTAuthMiddleware())
 	{
-		r.GET("/list", task.GetTask)
-		r.POST("/once", task.UploadStockOnce)
+		r.GET("/list", ar.handler.GetTask)
+		r.POST("/once", ar.handler.UploadStockOnce)
 	}
 }
 
-func addSSERouter() {
-	r := Router.Group("/sse", mdw.JWTAuth(), service.Stream.SSEHandler(), mdw.SSEHeaderMiddleware()) // JWTAuth授权
+func (ar *AppRouter) addSSERouter() {
+	r := ar.router.Group("/sse", ar.mdw.JWTAuth(), service.Stream.SSEHandler(), ar.mdw.SSEHeaderMiddleware()) // JWTAuth授权
 	{
 		r.GET("/task", task.StartTaskSSE)
 	}
 }
 
-func addWSRouter() {
-	r := Router.Group("/ws", mdw.JWTAuth(), ws.WebSocketHandler()) // JWTAuth授权
+func (ar *AppRouter) addWSRouter() {
+	r := ar.router.Group("/ws", ar.mdw.JWTAuth(), ws.WebSocketHandler()) // JWTAuth授权
 	{
-		r.GET("/task", task.StartTaskWS)
+		r.GET("/task", ar.handler.StartTaskWS)
 	}
 }

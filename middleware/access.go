@@ -8,11 +8,10 @@ import (
 	"net/http"
 	"pandora/ent"
 	"pandora/service"
-	"pandora/service/db"
 	"strings"
 )
 
-func AccessControl() gin.HandlerFunc {
+func (mdw *Middleware) AccessControl() gin.HandlerFunc {
 
 	return func(c *gin.Context) {
 		//获取请求的URI
@@ -26,7 +25,7 @@ func AccessControl() gin.HandlerFunc {
 		if !ok {
 			panic("use do not exists")
 		}
-		subs, err := getRolesByUserId(ctx, id.(int))
+		subs, err := mdw.getRolesByUserId(ctx, id.(int))
 		if err != nil {
 			// todo 需要用fmt.Sprintf包裹一层吗
 			panic(fmt.Sprintf("getRolesByUserId error: %s", err)) // todo 过滤context超时错误
@@ -42,8 +41,8 @@ func AccessControl() gin.HandlerFunc {
 	}
 }
 
-func getRolesByUserId(ctx context.Context, id int) ([]*ent.Role, error) {
-	user, err := db.Client.User.Get(ctx, id)
+func (mdw *Middleware) getRolesByUserId(ctx context.Context, id int) ([]*ent.Role, error) {
+	user, err := mdw.db.User.Get(ctx, id)
 	if err != nil {
 		return nil, errors.Wrapf(err, "查询id=%d的用户失败", id)
 	}

@@ -6,7 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"golang.org/x/sync/singleflight"
 	"pandora/service/cache"
-	"pandora/service/logger"
+	//"pandora/service/logger"
 	"time"
 )
 
@@ -51,7 +51,7 @@ func WithSchemas(schemas ...string) OptionFunc {
 //}
 
 // CacheWithOpt 带超时限制，不建议使用
-func CacheWithOpt(opts ...OptionFunc) gin.HandlerFunc {
+func (*Middleware) CacheWithOpt(opts ...OptionFunc) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		if c.Request.Method == "GET" {
 			opt := defaultCacheOption
@@ -100,7 +100,7 @@ func CacheWithOpt(opts ...OptionFunc) gin.HandlerFunc {
 }
 
 // CacheHandler 不带超时限制, 仅缓存GET请求和json返回
-func CacheHandler(schema ...string) gin.HandlerFunc {
+func (mdw *Middleware) CacheHandler(schema ...string) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		if c.Request.Method == "GET" {
 			url := c.Request.URL.RequestURI()
@@ -116,7 +116,7 @@ func CacheHandler(schema ...string) gin.HandlerFunc {
 						replyFromData(c, data)
 					}
 				} else {
-					logger.Error(fmt.Sprintf("cache singleflight 返回error:%+v", err))
+					mdw.logger.Error(fmt.Sprintf("cache singleflight 返回error:%+v", err))
 					// todo err != nil 的场景待添加
 					replyFromData(c, []byte("请求失败"))
 				}

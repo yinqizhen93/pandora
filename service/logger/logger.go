@@ -1,5 +1,7 @@
 package logger
 
+import "github.com/google/wire"
+
 type Logger interface {
 	Info(string)
 	Error(string)
@@ -11,6 +13,10 @@ var defaultLogger Logger
 
 func InitLogger() {
 	defaultLogger = NewZapLog()
+}
+
+func NewLogger() Logger {
+	return NewZapLog()
 }
 
 // SetLogger a customize logger to default logger
@@ -33,3 +39,5 @@ func Debug(msg string) {
 func Warn(msg string) {
 	defaultLogger.Info(msg)
 }
+
+var ProviderSet = wire.NewSet(NewLogger)

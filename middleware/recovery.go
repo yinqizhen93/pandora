@@ -12,7 +12,7 @@ import (
 )
 
 // GinRecovery recover掉项目可能出现的panic
-func GinRecovery(logger *zap.Logger, stack bool) gin.HandlerFunc {
+func (mdw *Middleware) GinRecovery(logger *zap.Logger, stack bool) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		defer func() {
 			if err := recover(); err != nil {

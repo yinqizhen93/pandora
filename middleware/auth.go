@@ -6,12 +6,11 @@ import (
 	"github.com/gin-gonic/gin"
 	"log"
 	"pandora/service"
-	"pandora/service/db"
 	"strings"
 )
 
 // JWTAuthMiddleware 基于JWT的认证中间件
-func JWTAuthMiddleware() gin.HandlerFunc {
+func (mdw *Middleware) JWTAuthMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		// 客户端携带Token有三种方式 1.放在请求头 2.放在请求体 3.放在URI
 		// 这里假设Token放在Header的Authorization中，并使用Bearer开头
@@ -38,7 +37,7 @@ func JWTAuthMiddleware() gin.HandlerFunc {
 			if ve, ok := err.(*jwt.ValidationError); ok {
 				if ve.Errors == jwt.ValidationErrorExpired { // token过期
 					if claims, ok := tk.Claims.(*service.Claims); ok {
-						can, err := tokenCanRefresh(c.Request.Context(), claims.UserId)
+						can, err := mdw.tokenCanRefresh(c.Request.Context(), claims.UserId)
 						if err != nil {
 							panic(err)
 						}
@@ -67,7 +66,7 @@ func JWTAuthMiddleware() gin.HandlerFunc {
 	}
 }
 
-func JWTAuth() gin.HandlerFunc {
+func (mdw *Middleware) JWTAuth() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		authInfo := c.Query("token")
 		if authInfo == "" {
@@ -89,7 +88,7 @@ func JWTAuth() gin.HandlerFunc {
 			if ve, ok := err.(*jwt.ValidationError); ok {
 				if ve.Errors == jwt.ValidationErrorExpired { // token过期
 					if claims, ok := tk.Claims.(*service.Claims); ok {
-						can, err := tokenCanRefresh(c.Request.Context(), claims.UserId)
+						can, err := mdw.tokenCanRefresh(c.Request.Context(), claims.UserId)
 						if err != nil {
 							panic(err)
 						}
@@ -118,8 +117,8 @@ func JWTAuth() gin.HandlerFunc {
 	}
 }
 
-func tokenCanRefresh(ctx context.Context, id int) (bool, error) {
-	user, err := db.Client.User.Get(ctx, id)
+func (mdw *Middleware) tokenCanRefresh(ctx context.Context, id int) (bool, error) {
+	user, err := mdw.db.User.Get(ctx, id)
 	if err != nil {
 		return false, err
 	}

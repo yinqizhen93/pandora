@@ -6,7 +6,7 @@ import (
 	"time"
 )
 
-func GinLogger(logger *zap.Logger) gin.HandlerFunc {
+func (mdw *Middleware) GinLogger(logger *zap.Logger) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		start := time.Now()
 		path := c.Request.URL.Path

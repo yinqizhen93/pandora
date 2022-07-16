@@ -14,7 +14,7 @@ func init() {
 	limiter = rate.NewLimiter(100, 10000)
 }
 
-func RateLimit() gin.HandlerFunc {
+func (mdw *Middleware) RateLimit() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		ctx := c.Request.Context()
 		if err := limiter.Wait(ctx); err != nil {

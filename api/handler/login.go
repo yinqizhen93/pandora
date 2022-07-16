@@ -1,4 +1,4 @@
-package auth
+package handler
 
 import (
 	"context"
@@ -9,8 +9,6 @@ import (
 	"pandora/api"
 	"pandora/ent/user"
 	"pandora/service"
-	"pandora/service/db"
-	"pandora/service/logger"
 	"runtime/debug"
 )
 
@@ -19,7 +17,7 @@ type UserInfo struct {
 	Password string
 }
 
-func Login(c *gin.Context) {
+func (h Handler) Login(c *gin.Context) {
 	// 用户发送用户名和密码过来
 	var userInf UserInfo
 	err := c.ShouldBind(&userInf)
@@ -31,10 +29,10 @@ func Login(c *gin.Context) {
 	if userInf.Username == "admin" && userInf.Password == "123" {
 		// 生成Token
 		ctx := c.Request.Context()
-		userId, err := getUserIdByName(ctx, userInf.Username)
+		userId, err := h.getUserIdByName(ctx, userInf.Username)
 		if err != nil {
 			// todo 记录日志
-			logger.Error(fmt.Sprintf("获取用户失败：%s; \n %s", err, debug.Stack()))
+			h.logger.Error(fmt.Sprintf("获取用户失败：%s; \n %s", err, debug.Stack()))
 			c.JSON(http.StatusOK, api.FailResponse(2009, "登录失败"))
 			return
 		}
@@ -44,7 +42,7 @@ func Login(c *gin.Context) {
 		}
 		// 保存refreshToken
 		refreshToken := service.CreateRefreshToken()
-		service.SaveRefreshToken(ctx, db.Client, userId, refreshToken)
+		service.SaveRefreshToken(ctx, h.db, userId, refreshToken)
 		c.JSON(http.StatusOK, gin.H{
 			"success": true,
 			"data":    gin.H{"token": tokenString},
@@ -55,8 +53,8 @@ func Login(c *gin.Context) {
 	return
 }
 
-func getUserIdByName(ctx context.Context, name string) (int, error) {
-	userId, err := db.Client.User.Query().Where(user.UsernameEQ(name)).Select("id").Int(ctx)
+func (h Handler) getUserIdByName(ctx context.Context, name string) (int, error) {
+	userId, err := h.db.User.Query().Where(user.UsernameEQ(name)).Select("id").Int(ctx)
 	//db.DB.Where("username = ?", name).First(&user)
 	if err != nil {
 		return 0, errors.Wrap(err, "getUserIdByName failed")
