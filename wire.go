@@ -9,6 +9,7 @@ import (
 	mdw "pandora/middleware"
 	"pandora/router"
 	"pandora/service/cache"
+	"pandora/service/config"
 	"pandora/service/db"
 	"pandora/service/logger"
 )
@@ -21,6 +22,7 @@ func initApp(addr ...string) *App {
 		router.ProviderSet,
 		mdw.ProviderSet,
 		cache.ProviderSet,
+		config.ProviderSet,
 		NewApp,
 	))
 }

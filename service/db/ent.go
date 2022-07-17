@@ -7,24 +7,16 @@ import (
 	"fmt"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/google/wire"
-	"github.com/spf13/viper"
 	"log"
 	"pandora/ent"
 	"pandora/service/cache"
+	"pandora/service/config"
 )
 
-// todo 配置读取抽离出来
-
-func NewEntClient(cache cache.Cacher) *ent.Client {
-	host := viper.GetString("database.host")
-	port := viper.GetString("database.port")
-	user := viper.GetString("database.username")
-	passwd := viper.GetString("database.password")
-	database := viper.GetString("database.database")
-	maxConnPool := viper.GetInt("database.maxConnPool")
-	maxIdleConns := viper.GetInt("database.maxIdleConns")
-	dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8mb4&parseTime=True&loc=Local",
-		user, passwd, host, port, database)
+func NewEntClient(cache cache.Cacher, conf config.Config) *ent.Client {
+	maxConnPool := conf.GetInt("database.maxConnPool")
+	maxIdleConns := conf.GetInt("database.maxIdleConns")
+	dsn := getDsn(conf)
 	db, err := sql.Open("mysql", dsn)
 	if err != nil {
 		panic(fmt.Sprintf("数据库初始化失败:%s", err))
@@ -32,11 +24,6 @@ func NewEntClient(cache cache.Cacher) *ent.Client {
 	db.SetMaxOpenConns(maxConnPool)
 	db.SetMaxIdleConns(maxIdleConns)
 	drv := entsql.OpenDB("mysql", db)
-	//cDrv := entcache.NewDriver(drv,
-	//	entcache.ContextLevel(),
-	//	entcache.TTL(time.Minute),             // 缓存过期时间
-	//	entcache.Levels(entcache.NewLRU(128)), // 缓存最大条数
-	//) // 添加山缓存
 	client := ent.NewClient(ent.Driver(drv))
 	// add runtime hooks
 	client.Use(removeCache(cache))
@@ -45,6 +32,17 @@ func NewEntClient(cache cache.Cacher) *ent.Client {
 		log.Fatalf("failed creating schema resources: %v", err)
 	}
 	return client
+}
+
+func getDsn(conf config.Config) string {
+	host := conf.GetString("database.host")
+	port := conf.GetString("database.port")
+	user := conf.GetString("database.username")
+	passwd := conf.GetString("database.password")
+	database := conf.GetString("database.database")
+	dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8mb4&parseTime=True&loc=Local",
+		user, passwd, host, port, database)
+	return dsn
 }
 
 // updateCache is a hook to remove related cache

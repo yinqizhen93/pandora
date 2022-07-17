@@ -2,34 +2,37 @@ package logger
 
 import (
 	rotatelogs "github.com/lestrrat-go/file-rotatelogs"
-	"github.com/spf13/viper"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 	"os"
+	"pandora/service/config"
 	"time"
 )
 
 type zapLog struct {
 	logger *zap.Logger
+	conf   config.Config
 }
 
-func NewZapLog() *zapLog {
-	encoder := getEncoder()
-	infoDebugWarnWriter := getInfoDebugWarnLogWriter()
+func NewZapLog(conf config.Config) *zapLog {
+	zl := &zapLog{
+		conf: conf,
+	}
+	encoder := zl.getEncoder()
+	infoDebugWarnWriter := zl.getInfoDebugWarnLogWriter()
 	infoDebugWarnLevel := zap.LevelEnablerFunc(func(lvl zapcore.Level) bool {
 		return lvl == zapcore.InfoLevel || lvl == zapcore.DebugLevel || lvl == zapcore.WarnLevel
 	})
 	infoDebugWarnCore := zapcore.NewCore(encoder, infoDebugWarnWriter, infoDebugWarnLevel)
-	errorWriter := getErrorLogWriter()
+	errorWriter := zl.getErrorLogWriter()
 	errorLevel := zap.ErrorLevel
 	errorCore := zapcore.NewCore(encoder, errorWriter, errorLevel)
 	core := zapcore.NewTee(infoDebugWarnCore, errorCore)
-	return &zapLog{
-		logger: zap.New(core, zap.AddCaller()),
-	}
+	zl.logger = zap.New(core, zap.AddCaller())
+	return zl
 }
 
-func getEncoder() zapcore.Encoder {
+func (zl *zapLog) getEncoder() zapcore.Encoder {
 	encoderConfig := zap.NewProductionEncoderConfig()
 	encoderConfig.EncodeTime = zapcore.ISO8601TimeEncoder
 	encoderConfig.EncodeLevel = zapcore.CapitalLevelEncoder
@@ -44,16 +47,16 @@ func getEncoder() zapcore.Encoder {
 //	return zapcore.NewJSONEncoder(encoderConfig)
 //}
 
-func getInfoDebugWarnLogWriter() zapcore.WriteSyncer {
-	fileName := viper.GetString("log.logFile")
+func (zl *zapLog) getInfoDebugWarnLogWriter() zapcore.WriteSyncer {
+	fileName := zl.conf.GetString("log.logFile")
 	if fileName == "" {
 		panic("getInfoDebugWarnLogWriter error: no log.logFile in config file")
 	}
-	maxAge := viper.GetInt("log.maxAge")
+	maxAge := zl.conf.GetInt("log.maxAge")
 	if maxAge == 0 {
 		maxAge = 30
 	}
-	rotateTime := viper.GetInt("log.rotateTime")
+	rotateTime := zl.conf.GetInt("log.rotateTime")
 	if rotateTime == 0 {
 		rotateTime = 1
 	}
@@ -69,8 +72,8 @@ func getInfoDebugWarnLogWriter() zapcore.WriteSyncer {
 	return zapcore.AddSync(hook)
 }
 
-func getErrorLogWriter() zapcore.WriteSyncer {
-	fileName := viper.GetString("log.errorLog")
+func (zl *zapLog) getErrorLogWriter() zapcore.WriteSyncer {
+	fileName := zl.conf.GetString("log.errorLog")
 	if fileName == "" {
 		panic("getErrorLogWriter error: no log.errorLog in config file")
 	}
@@ -78,18 +81,18 @@ func getErrorLogWriter() zapcore.WriteSyncer {
 	return zapcore.AddSync(file)
 }
 
-func (z *zapLog) Info(msg string) {
-	z.logger.Info(msg)
+func (zl *zapLog) Info(msg string) {
+	zl.logger.Info(msg)
 }
 
-func (z *zapLog) Error(msg string) {
-	z.logger.Error(msg)
+func (zl *zapLog) Error(msg string) {
+	zl.logger.Error(msg)
 }
 
-func (z *zapLog) Debug(msg string) {
-	z.logger.Debug(msg)
+func (zl *zapLog) Debug(msg string) {
+	zl.logger.Debug(msg)
 }
 
-func (z *zapLog) Warn(msg string) {
-	z.logger.Warn(msg)
+func (zl *zapLog) Warn(msg string) {
+	zl.logger.Warn(msg)
 }
