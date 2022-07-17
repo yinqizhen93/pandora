@@ -5,6 +5,7 @@ package ent
 import (
 	"errors"
 	"fmt"
+	"pandora/ent/casbinrule"
 	"pandora/ent/role"
 	"pandora/ent/stock"
 	"pandora/ent/task"
@@ -32,10 +33,11 @@ type OrderFunc func(*sql.Selector)
 // columnChecker returns a function indicates if the column exists in the given column.
 func columnChecker(table string) func(string) error {
 	checks := map[string]func(string) bool{
-		role.Table:  role.ValidColumn,
-		stock.Table: stock.ValidColumn,
-		task.Table:  task.ValidColumn,
-		user.Table:  user.ValidColumn,
+		casbinrule.Table: casbinrule.ValidColumn,
+		role.Table:       role.ValidColumn,
+		stock.Table:      stock.ValidColumn,
+		task.Table:       task.ValidColumn,
+		user.Table:       user.ValidColumn,
 	}
 	check, ok := checks[table]
 	if !ok {

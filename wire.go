@@ -23,6 +23,7 @@ func initApp(addr ...string) *App {
 		mdw.ProviderSet,
 		cache.ProviderSet,
 		config.ProviderSet,
+		//access.ProviderSet,
 		NewApp,
 	))
 }

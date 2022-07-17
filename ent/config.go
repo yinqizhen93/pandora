@@ -24,10 +24,11 @@ type config struct {
 
 // hooks per client, for fast access.
 type hooks struct {
-	Role  []ent.Hook
-	Stock []ent.Hook
-	Task  []ent.Hook
-	User  []ent.Hook
+	CasbinRule []ent.Hook
+	Role       []ent.Hook
+	Stock      []ent.Hook
+	Task       []ent.Hook
+	User       []ent.Hook
 }
 
 // Options applies the options on the config object.

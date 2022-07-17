@@ -7,12 +7,14 @@ import (
 	"github.com/pkg/errors"
 	"net/http"
 	"pandora/ent"
-	"pandora/service"
+	"pandora/service/access"
 	"strings"
 )
 
 func (mdw *Middleware) AccessControl() gin.HandlerFunc {
-
+	if mdw.accessCtrl == nil {
+		mdw.accessCtrl = access.NewRBAC(mdw.db)
+	}
 	return func(c *gin.Context) {
 		//获取请求的URI
 		url := c.Request.URL.RequestURI()
@@ -32,7 +34,10 @@ func (mdw *Middleware) AccessControl() gin.HandlerFunc {
 		}
 		//判断策略中是否存在
 		for _, sub := range subs {
-			if ok, _ := service.Enforcer.Enforce(sub.Name, baseUrl, act); ok {
+			fmt.Println(sub)
+			fmt.Println(baseUrl)
+			fmt.Println(act)
+			if ok := mdw.accessCtrl.HasAccess(sub.Name, baseUrl, act); ok {
 				return
 			}
 		}
