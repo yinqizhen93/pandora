@@ -1,6 +1,7 @@
 package access
 
 import (
+	"fmt"
 	"github.com/casbin/casbin/v2"
 	"github.com/casbin/casbin/v2/persist"
 	"log"
@@ -19,13 +20,6 @@ type CasbinRBAC struct {
 }
 
 func NewCasbinRBAC(db *ent.Client) *CasbinRBAC {
-	//dsn := getDsn(conf)
-	//
-
-	//if err != nil {
-	//	log.Printf("连接数据库错误: %v", err)
-	//	return nil
-	//}
 	a := NewEnta(db)
 	e, err := casbin.NewEnforcer(getModelFile(), a)
 	if err != nil {
@@ -41,8 +35,8 @@ func NewCasbinRBAC(db *ent.Client) *CasbinRBAC {
 	cr := CasbinRBAC{
 		e: e,
 	}
+	fmt.Println(cr.e.GetPolicy())
 	return &cr
-	//fmt.Println(Enforcer.GetPolicy())
 }
 
 func (cr CasbinRBAC) HasAccess(user, url, method string) bool {
@@ -62,16 +56,3 @@ func getModelFile() string {
 	file = path.Join("configs", policyFile)
 	return file
 }
-
-//func getDsn(conf config.Config) string {
-//	host := conf.GetString("database.host")
-//	port := conf.GetString("database.port")
-//	user := conf.GetString("database.username")
-//	passwd := conf.GetString("database.password")
-//	database := conf.GetString("database.database")
-//	//maxConnPool := viper.GetInt("database.maxConnPool")
-//	//maxIdleConns := viper.GetInt("database.maxIdleConns")
-//	dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8mb4&parseTime=True&loc=Local",
-//		user, passwd, host, port, database)
-//	return dsn
-//}

@@ -34,9 +34,6 @@ func (mdw *Middleware) AccessControl() gin.HandlerFunc {
 		}
 		//判断策略中是否存在
 		for _, sub := range subs {
-			fmt.Println(sub)
-			fmt.Println(baseUrl)
-			fmt.Println(act)
 			if ok := mdw.accessCtrl.HasAccess(sub.Name, baseUrl, act); ok {
 				return
 			}
