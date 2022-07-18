@@ -34,7 +34,7 @@ func InitRiskControl() {
 	apis := make(map[string]interface{})
 	apis["print"] = fmt.Println // 此处注入的应该是单个规则验证无关的通用函数，或全局变量
 	apis["appendStr"] = appendStr
-	initRule := "rule \"empty\"  \"\" salience 0 begin end"
+	initRule := `rule "empty"  "" salience 0 begin end`
 	RiskControl = NewRiskControlServer(10, 20, 1, initRule, apis)
 }
 

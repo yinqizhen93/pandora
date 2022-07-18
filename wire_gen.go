@@ -27,6 +27,6 @@ func initApp(addr ...string) *App {
 	handlerHandler := handler.NewHandler(loggerLogger, client)
 	middlewareMiddleware := middleware.NewMiddleware(loggerLogger, client)
 	appRouter := router.NewAppRouter(engine, handlerHandler, middlewareMiddleware)
-	app := NewApp(appRouter, addr...)
+	app := NewApp(appRouter, configConfig)
 	return app
 }
