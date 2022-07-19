@@ -11,7 +11,7 @@ ENV ENV GO111MODULE=on \
 # 移动到工作目录 /build
 WORKDIR /build
 
-# 将代码赋值到文件中
+# 将代码复制到文件中
 COPY . .
 
 # 将代码编译成二进制文件pandora
@@ -31,7 +31,7 @@ RUN apk --update add tzdata && \
 RUN mkdir logs
 
 # COPY 命令是将源文件夹的里的子文件和文件夹复制到目的文件夹，因此需要复制整个文件夹时，指定目标文件夹和源文件夹一致
-COPY config ./config
+COPY configs ./configs
 
 # 从builder镜像把pandora二进制复制过来
 COPY --from=builder /build/pandora .
