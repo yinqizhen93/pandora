@@ -8,6 +8,8 @@ ENV ENV GO111MODULE=on \
         GOARCH=amd64 \
         GOPROXY="https://goproxy.cn,direct"
 
+# RUN apk add build-base # to solve running gcc failed: exec: "gcc": executable file not found in $PATH
+
 # 移动到工作目录 /build
 WORKDIR /build
 
