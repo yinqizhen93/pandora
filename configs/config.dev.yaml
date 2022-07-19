@@ -1,5 +1,5 @@
 server:
-  address: 127.0.0.1:5001
+  address: 0.0.0.0:5001 # 部署到容器中时，监听ip需要为0.0.0.0
 # 数据库配置
 database:
   driverName: mysql
