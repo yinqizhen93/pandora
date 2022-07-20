@@ -38,6 +38,8 @@ COPY configs ./configs
 # 从builder镜像把pandora二进制复制过来
 COPY --from=builder /build/pandora .
 
+# RUN会构建镜像层，ENV命令要放在RUN后面，作用于最新镜像层
+ENV PANDORA=production
 # 暴露应用的端口
 EXPOSE 5001
 CMD ["./pandora"]
