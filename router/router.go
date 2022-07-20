@@ -3,8 +3,11 @@ package router
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/google/wire"
+	swaggerFiles "github.com/swaggo/files"
+	gs "github.com/swaggo/gin-swagger"
 	"os"
 	"pandora/api/handler"
+	_ "pandora/docs" // 以上导入for Swagger
 	mdw "pandora/middleware"
 	"pandora/service"
 	ws "pandora/service/websocket"
@@ -46,12 +49,18 @@ func (ar *AppRouter) Run(addr ...string) error {
 }
 
 func (ar *AppRouter) InitRouter() {
+	ar.addSwaggerRouter()
 	ar.addLoginRouter()
 	ar.addAuthRouter()
 	ar.addStockRouter()
 	ar.addTaskRouter()
 	ar.addSSERouter()
 	ar.addWSRouter()
+}
+
+// see api docs on http://localhost:5001/swagger/index.html
+func (ar *AppRouter) addSwaggerRouter() {
+	ar.router.GET("/swagger/*any", gs.WrapHandler(swaggerFiles.Handler))
 }
 
 func (ar *AppRouter) addLoginRouter() {

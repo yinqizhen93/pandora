@@ -51,6 +51,14 @@ type UserRequest struct {
 	Email    string `json:"email" binding:"required,email"`
 }
 
+// CreateUser 创建用户接口
+// @Summary 创建用户接口
+// @Tags 创建用户接口
+// @Accept application/json
+// @Produce application/json
+// @Param object body UserRequest true "查询参数"
+// @Security ApiKeyAuth
+// @Router /auth/users/ [post]
 func (h Handler) CreateUser(c *gin.Context) {
 	var ur UserRequest
 	if err := c.ShouldBind(&ur); err != nil {

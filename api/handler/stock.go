@@ -24,6 +24,14 @@ type stockQuery struct {
 	SearchVal string    `form:"searchVal"`
 }
 
+// GetStock 查询Stock接口
+// @Summary 查询Stock接口
+// @Tags 查询Stock接口
+// @Accept application/json
+// @Produce application/json
+// @Param object query stockQuery true "查询参数"
+// @Security ApiKeyAuth
+// @Router /stocks/daily [get]
 func (h Handler) GetStock(c *gin.Context) {
 	var sq stockQuery
 	if err := c.ShouldBindQuery(&sq); err != nil {

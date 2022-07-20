@@ -1,0 +1,75 @@
+basePath: /
+definitions:
+  handler.UserRequest:
+    properties:
+      email:
+        type: string
+      password:
+        type: string
+      username:
+        type: string
+    required:
+    - email
+    - password
+    - username
+    type: object
+host: localhost:5001
+info:
+  contact: {}
+  description: pandora api文档
+  title: PANDORA API DOCUMENT
+  version: "1.0"
+paths:
+  /auth/users/:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: 查询参数
+        in: body
+        name: object
+        required: true
+        schema:
+          $ref: '#/definitions/handler.UserRequest'
+      produces:
+      - application/json
+      responses: {}
+      security:
+      - ApiKeyAuth: []
+      summary: 创建用户接口
+      tags:
+      - 创建用户接口
+  /stocks/daily:
+    get:
+      consumes:
+      - application/json
+      parameters:
+      - in: query
+        name: endDate
+        required: true
+        type: string
+      - in: query
+        minimum: 1
+        name: page
+        required: true
+        type: integer
+      - in: query
+        name: pageSize
+        required: true
+        type: integer
+      - in: query
+        name: searchVal
+        type: string
+      - in: query
+        name: startDate
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses: {}
+      security:
+      - ApiKeyAuth: []
+      summary: 查询Stock接口
+      tags:
+      - 查询Stock接口
+swagger: "2.0"
