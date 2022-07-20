@@ -2,17 +2,17 @@ package middleware
 
 import (
 	"github.com/gin-gonic/gin"
-	"go.uber.org/zap"
 	"net"
 	"net/http"
 	"net/http/httputil"
 	"os"
+	"pandora/service/logger"
 	"runtime/debug"
 	"strings"
 )
 
-// GinRecovery recover掉项目可能出现的panic
-func (mdw *Middleware) GinRecovery(logger *zap.Logger, stack bool) gin.HandlerFunc {
+// Recovery recover掉项目可能出现的panic
+func (mdw *Middleware) Recovery(stack bool) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		defer func() {
 			if err := recover(); err != nil {
@@ -29,9 +29,9 @@ func (mdw *Middleware) GinRecovery(logger *zap.Logger, stack bool) gin.HandlerFu
 
 				httpRequest, _ := httputil.DumpRequest(c.Request, false)
 				if brokenPipe {
-					logger.Error(c.Request.URL.Path,
-						zap.Any("error", err),
-						zap.String("request", string(httpRequest)),
+					mdw.logger.Error(c.Request.URL.Path,
+						logger.Pair{K: "error", V: err},
+						logger.Pair{K: "request", V: string(httpRequest)},
 					)
 					// If the connection is dead, we can't write a status to it.
 					c.Error(err.(error)) // nolint: errcheck
@@ -40,15 +40,15 @@ func (mdw *Middleware) GinRecovery(logger *zap.Logger, stack bool) gin.HandlerFu
 				}
 
 				if stack {
-					logger.Error("[Recovery from panic]",
-						zap.Any("error", err),
-						zap.String("request", string(httpRequest)),
-						zap.String("stack", string(debug.Stack())),
+					mdw.logger.Error("[Recovery from panic]",
+						logger.Pair{K: "error", V: err},
+						logger.Pair{K: "request", V: string(httpRequest)},
+						logger.Pair{K: "stack", V: string(debug.Stack())},
 					)
 				} else {
-					logger.Error("[Recovery from panic]",
-						zap.Any("error", err),
-						zap.String("request", string(httpRequest)),
+					mdw.logger.Error("[Recovery from panic]",
+						logger.Pair{K: "error", V: err},
+						logger.Pair{K: "request", V: string(httpRequest)},
 					)
 				}
 				c.AbortWithStatus(http.StatusInternalServerError)

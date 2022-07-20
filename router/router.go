@@ -3,6 +3,7 @@ package router
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/google/wire"
+	"os"
 	"pandora/api/handler"
 	mdw "pandora/middleware"
 	"pandora/service"
@@ -13,7 +14,7 @@ import (
 
 //var Router = gin.New()
 
-var ProviderSet = wire.NewSet(NewEngine, NewAppRouter)
+var ProviderSet = wire.NewSet(NewAppRouter)
 
 type AppRouter struct {
 	router  *gin.Engine
@@ -21,16 +22,22 @@ type AppRouter struct {
 	mdw     *mdw.Middleware
 }
 
-func NewEngine() *gin.Engine {
+func (ar *AppRouter) NewEngine() *gin.Engine {
+	if os.Getenv("PANDORA") == "production" {
+		e := gin.New()
+		e.Use(ar.mdw.Logger(), ar.mdw.Recovery(true))
+		return e
+	}
 	return gin.Default()
 }
 
-func NewAppRouter(router *gin.Engine, handler *handler.Handler, mdw *mdw.Middleware) *AppRouter {
-	return &AppRouter{
-		router:  router,
+func NewAppRouter(handler *handler.Handler, mdw *mdw.Middleware) *AppRouter {
+	ar := &AppRouter{
 		handler: handler,
 		mdw:     mdw,
 	}
+	ar.router = ar.NewEngine()
+	return ar
 }
 
 func (ar *AppRouter) Run(addr ...string) error {

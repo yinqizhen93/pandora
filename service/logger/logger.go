@@ -6,10 +6,15 @@ import (
 )
 
 type Logger interface {
-	Info(string)
-	Error(string)
-	Debug(string)
-	Warn(string)
+	Info(string, ...Pair)
+	Error(string, ...Pair)
+	Debug(string, ...Pair)
+	Warn(string, ...Pair)
+}
+
+type Pair struct {
+	K string
+	V interface{}
 }
 
 //var defaultLogger Logger

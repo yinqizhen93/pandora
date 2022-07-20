@@ -19,14 +19,13 @@ import (
 // Injectors from wire.go:
 
 func initApp(addr ...string) *App {
-	engine := router.NewEngine()
 	configConfig := config.NewConfig()
 	loggerLogger := logger.NewLogger(configConfig)
 	cacher := cache.NewCacher()
 	client := db.NewEntClient(cacher, configConfig)
 	handlerHandler := handler.NewHandler(loggerLogger, client)
 	middlewareMiddleware := middleware.NewMiddleware(loggerLogger, client)
-	appRouter := router.NewAppRouter(engine, handlerHandler, middlewareMiddleware)
+	appRouter := router.NewAppRouter(handlerHandler, middlewareMiddleware)
 	app := NewApp(appRouter, configConfig)
 	return app
 }

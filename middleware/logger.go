@@ -2,11 +2,11 @@ package middleware
 
 import (
 	"github.com/gin-gonic/gin"
-	"go.uber.org/zap"
+	"pandora/service/logger"
 	"time"
 )
 
-func (mdw *Middleware) GinLogger(logger *zap.Logger) gin.HandlerFunc {
+func (mdw *Middleware) Logger() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		start := time.Now()
 		path := c.Request.URL.Path
@@ -14,15 +14,15 @@ func (mdw *Middleware) GinLogger(logger *zap.Logger) gin.HandlerFunc {
 		c.Next()
 
 		cost := time.Since(start)
-		logger.Info(path,
-			zap.Int("status", c.Writer.Status()),
-			zap.String("method", c.Request.Method),
-			zap.String("path", path),
-			zap.String("query", query),
-			zap.String("ip", c.ClientIP()),
-			zap.String("user-agent", c.Request.UserAgent()),
-			zap.String("errors", c.Errors.ByType(gin.ErrorTypePrivate).String()),
-			zap.Duration("cost", cost),
+		mdw.logger.Info(path,
+			logger.Pair{K: "status", V: c.Writer.Status()},
+			logger.Pair{K: "method", V: c.Request.Method},
+			logger.Pair{K: "path", V: path},
+			logger.Pair{K: "query", V: query},
+			logger.Pair{K: "ip", V: c.ClientIP()},
+			logger.Pair{K: "user-agent", V: c.Request.UserAgent()},
+			logger.Pair{K: "errors", V: c.Errors.ByType(gin.ErrorTypePrivate).String()},
+			logger.Pair{K: "cost", V: cost},
 		)
 	}
 }

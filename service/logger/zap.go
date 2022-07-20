@@ -58,10 +58,10 @@ func (zl *zapLog) getInfoDebugWarnLogWriter() zapcore.WriteSyncer {
 	}
 	rotateTime := zl.conf.GetInt("log.rotateTime")
 	if rotateTime == 0 {
-		rotateTime = 1
+		rotateTime = 24
 	}
 	hook, err := rotatelogs.New(
-		fileName+"_%Y%m%d%H.log",
+		fileName+"_%Y%m%d.log",
 		rotatelogs.WithLinkName(fileName),
 		rotatelogs.WithMaxAge(time.Hour*24*time.Duration(maxAge)),
 		rotatelogs.WithRotationTime(time.Hour*time.Duration(rotateTime)),
@@ -81,18 +81,34 @@ func (zl *zapLog) getErrorLogWriter() zapcore.WriteSyncer {
 	return zapcore.AddSync(file)
 }
 
-func (zl *zapLog) Info(msg string) {
-	zl.logger.Info(msg)
+func (zl *zapLog) Info(msg string, kvs ...Pair) {
+	data := make([]zap.Field, len(kvs))
+	for i, kv := range kvs {
+		data[i] = zap.Any(kv.K, kv.V)
+	}
+	zl.logger.Info(msg, data...)
 }
 
-func (zl *zapLog) Error(msg string) {
-	zl.logger.Error(msg)
+func (zl *zapLog) Error(msg string, kvs ...Pair) {
+	data := make([]zap.Field, len(kvs))
+	for i, kv := range kvs {
+		data[i] = zap.Any(kv.K, kv.V)
+	}
+	zl.logger.Error(msg, data...)
 }
 
-func (zl *zapLog) Debug(msg string) {
-	zl.logger.Debug(msg)
+func (zl *zapLog) Debug(msg string, kvs ...Pair) {
+	data := make([]zap.Field, len(kvs))
+	for i, kv := range kvs {
+		data[i] = zap.Any(kv.K, kv.V)
+	}
+	zl.logger.Debug(msg, data...)
 }
 
-func (zl *zapLog) Warn(msg string) {
-	zl.logger.Warn(msg)
+func (zl *zapLog) Warn(msg string, kvs ...Pair) {
+	data := make([]zap.Field, len(kvs))
+	for i, kv := range kvs {
+		data[i] = zap.Any(kv.K, kv.V)
+	}
+	zl.logger.Warn(msg, data...)
 }
