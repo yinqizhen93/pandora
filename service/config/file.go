@@ -4,11 +4,10 @@ import (
 	"fmt"
 	"github.com/fsnotify/fsnotify"
 	"github.com/spf13/viper"
-	"os"
 	"path"
 )
 
-var configFile = "config.dev.yaml"
+var configFile = "configs/config.dev.yaml"
 
 type FileConfig struct {
 	file    string
@@ -31,11 +30,12 @@ func NewFileConfig() *FileConfig {
 
 // getConfigFile 获取配置文件， 配置文件所在文件夹configs需要与go可执行文件在同一个层级， go相对路径是相对可执行文件
 func getConfigFile() (file string) {
-	if fileFolder := os.Getenv("PANDORA_STATIC"); fileFolder != "" {
-		file = path.Join(fileFolder, configFile)
-		return
-	}
-	file = path.Join("configs", configFile)
+	//if fileFolder := os.Getenv("PANDORA_STATIC"); fileFolder != "" {
+	//	file = path.Join(fileFolder, configFile)
+	//	return
+	//}
+	file = path.Join(RootPath, configFile)
+	//file = path.Join("configs", configFile)
 	return
 }
 

@@ -1,6 +1,9 @@
 package config
 
-import "github.com/google/wire"
+import (
+	"github.com/google/wire"
+	"os"
+)
 
 type Config interface {
 	Load()
@@ -17,3 +20,12 @@ func NewConfig() Config {
 }
 
 var ProviderSet = wire.NewSet(NewConfig)
+
+var RootPath = getRootPath()
+
+func getRootPath() string {
+	if cp := os.Getenv("ROOTPATH"); cp != "" {
+		return cp
+	}
+	return "."
+}
