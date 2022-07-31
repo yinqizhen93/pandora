@@ -6,6 +6,7 @@ import (
 	"go.uber.org/zap/zapcore"
 	"os"
 	"pandora/service/config"
+	"path"
 	"time"
 )
 
@@ -52,6 +53,7 @@ func (zl *zapLog) getInfoDebugWarnLogWriter() zapcore.WriteSyncer {
 	if fileName == "" {
 		panic("getInfoDebugWarnLogWriter error: no log.logFile in config file")
 	}
+	fileName = path.Join(config.RootPath, fileName)
 	maxAge := zl.conf.GetInt("log.maxAge")
 	if maxAge == 0 {
 		maxAge = 30
@@ -77,6 +79,7 @@ func (zl *zapLog) getErrorLogWriter() zapcore.WriteSyncer {
 	if fileName == "" {
 		panic("getErrorLogWriter error: no log.errorLog in config file")
 	}
+	fileName = path.Join(config.RootPath, fileName)
 	file, _ := os.OpenFile(fileName+".log", os.O_RDWR|os.O_CREATE|os.O_APPEND, os.ModeAppend|os.ModePerm)
 	return zapcore.AddSync(file)
 }
