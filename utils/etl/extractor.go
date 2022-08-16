@@ -1,5 +1,7 @@
 package etl
 
+import df "github.com/go-gota/gota/dataframe"
+
 type Extractor interface {
-	extract()
+	extract() (df.DataFrame, error)
 }

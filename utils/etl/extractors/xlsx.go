@@ -1,7 +1,8 @@
 package extractors
 
 import (
-	"strconv"
+	"fmt"
+	"github.com/xuri/excelize/v2"
 )
 
 type Xlsx struct {
@@ -18,21 +19,13 @@ const (
 	//Unknown Type = "unknown"
 )
 
-//func (xl Xlsx) extract() error {
-//	f, err := excelize.OpenFile(xl.file)
-//	if err != nil {
-//		return err
-//	}
-//	rows, err := f.GetRows("Sheet1")
-//	header := rows[0]
-//}
-
-func detectType(s string) (interface{}, Type) {
-	if v, err := strconv.Atoi(s); err != nil {
-		return v, String
+func (xl Xlsx) extract() error {
+	f, err := excelize.OpenFile(xl.file)
+	if err != nil {
+		return err
 	}
-	if v, err := strconv.ParseFloat(s, 64); err != nil {
-		return v, Float64
-	}
-	return s, String
+	rows, err := f.GetRows(xl.sht)
+	header := rows[0]
+	fmt.Println(header)
+	return nil
 }

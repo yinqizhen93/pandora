@@ -1,5 +1,7 @@
 package etl
 
+import df "github.com/go-gota/gota/dataframe"
+
 type Processor interface {
-	process()
+	process(df.DataFrame) df.DataFrame
 }

@@ -1,10 +1,9 @@
 package etl
 
-type Data struct {
-	rows []Row
-	nr   int
-	nc   int
-}
+import (
+	df "github.com/go-gota/gota/dataframe"
+)
 
-type Row struct {
+type Data struct {
+	data df.DataFrame
 }

@@ -1,5 +1,7 @@
 package etl
 
+import df "github.com/go-gota/gota/dataframe"
+
 type Loader interface {
-	load()
+	load(df.DataFrame) error
 }
