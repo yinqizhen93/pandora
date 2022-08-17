@@ -24,7 +24,7 @@ func initApp(addr ...string) *App {
 	cacher := cache.NewCacher()
 	client := db.NewEntClient(cacher, configConfig)
 	handlerHandler := handler.NewHandler(loggerLogger, client)
-	middlewareMiddleware := middleware.NewMiddleware(loggerLogger, client)
+	middlewareMiddleware := middleware.NewMiddleware(loggerLogger, client, cacher)
 	appRouter := router.NewAppRouter(handlerHandler, middlewareMiddleware)
 	app := NewApp(appRouter, configConfig)
 	return app

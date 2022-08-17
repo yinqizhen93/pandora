@@ -113,10 +113,10 @@ func (h Handler) UpdateUser(c *gin.Context) {
 		upd.SetUsername(username.(string))
 	}
 	if password, ok := ur["password"]; ok {
-		upd.SetUsername(password.(string))
+		upd.SetPassword(password.(string))
 	}
 	if email, ok := ur["email"]; ok {
-		upd.SetUsername(email.(string))
+		upd.SetEmail(email.(string))
 	}
 	if _, err := upd.Save(c.Request.Context()); err != nil {
 		h.logger.Error(fmt.Sprintf("更新保存失败：%s; \n %s", err, debug.Stack()))

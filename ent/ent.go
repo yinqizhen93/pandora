@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"pandora/ent/casbinrule"
+	"pandora/ent/material"
 	"pandora/ent/role"
 	"pandora/ent/stock"
 	"pandora/ent/task"
@@ -34,6 +35,7 @@ type OrderFunc func(*sql.Selector)
 func columnChecker(table string) func(string) error {
 	checks := map[string]func(string) bool{
 		casbinrule.Table: casbinrule.ValidColumn,
+		material.Table:   material.ValidColumn,
 		role.Table:       role.ValidColumn,
 		stock.Table:      stock.ValidColumn,
 		task.Table:       task.ValidColumn,

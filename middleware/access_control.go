@@ -25,7 +25,7 @@ func (mdw *Middleware) AccessControl() gin.HandlerFunc {
 		ctx := c.Request.Context()
 		id, ok := c.Get("userId")
 		if !ok {
-			panic("use do not exists")
+			panic("user do not exists")
 		}
 		subs, err := mdw.getRolesByUserId(ctx, id.(int))
 		if err != nil {
@@ -38,7 +38,8 @@ func (mdw *Middleware) AccessControl() gin.HandlerFunc {
 				return
 			}
 		}
-		c.Status(http.StatusForbidden)
+		//c.Status(http.StatusForbidden)
+		c.JSON(http.StatusForbidden, gin.H{"msg": "未授权操作"})
 		c.Abort()
 	}
 }

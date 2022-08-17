@@ -56,6 +56,7 @@ func (ar *AppRouter) InitRouter() {
 	ar.addTaskRouter()
 	ar.addSSERouter()
 	ar.addWSRouter()
+	ar.addMaterialRouter()
 }
 
 // see api docs on http://localhost:5001/swagger/index.html
@@ -93,6 +94,15 @@ func (ar *AppRouter) addStockRouter() {
 		r.GET("/daily", ar.mdw.TimeOut(2000), ar.mdw.RateLimit(), ar.mdw.AccessControl(), ar.mdw.CacheHandler("Stock"), ar.handler.GetStock)
 		r.POST("/daily/upload", ar.handler.UploadStock)
 		r.POST("/daily/download", ar.handler.DownloadStock)
+	}
+}
+
+func (ar *AppRouter) addMaterialRouter() {
+	r := ar.router.Group("/materials")
+	{
+		r.GET("", ar.handler.GetMaterial)
+		r.GET("/edit", ws.WebSocketHandler(), ar.handler.EditMaterial)
+		r.PUT("/:id", ar.handler.UpdateMaterial)
 	}
 }
 

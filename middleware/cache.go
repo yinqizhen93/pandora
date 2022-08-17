@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"golang.org/x/sync/singleflight"
-	"pandora/service/cache"
 	//"pandora/service/logger"
 	"time"
 )
@@ -52,9 +51,9 @@ func WithSchemas(schemas ...string) OptionFunc {
 
 // CacheWithOpt 带超时限制，不建议使用
 func (mdw *Middleware) CacheWithOpt(opts ...OptionFunc) gin.HandlerFunc {
-	if mdw.cache == nil {
-		mdw.cache = cache.NewMemCache()
-	}
+	//if mdw.cache == nil {
+	//	mdw.cache = cache.NewMemCache()
+	//}
 	return func(c *gin.Context) {
 		if c.Request.Method == "GET" {
 			opt := defaultCacheOption
@@ -104,9 +103,9 @@ func (mdw *Middleware) CacheWithOpt(opts ...OptionFunc) gin.HandlerFunc {
 
 // CacheHandler 不带超时限制, 仅缓存GET请求和json返回
 func (mdw *Middleware) CacheHandler(schema ...string) gin.HandlerFunc {
-	if mdw.cache == nil {
-		mdw.cache = cache.NewMemCache()
-	}
+	//if mdw.cache == nil {
+	//	mdw.cache = cache.NewMemCache()
+	//}
 	return func(c *gin.Context) {
 		if c.Request.Method == "GET" {
 			url := c.Request.URL.RequestURI()

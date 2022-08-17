@@ -3,7 +3,6 @@ package api
 import (
 	"bytes"
 	"encoding/json"
-	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/pkg/errors"
 	"io/ioutil"
@@ -14,7 +13,6 @@ import (
 // ParseJsonFormInputMap 解析请求里的json参数或formData参数转换为map类型
 func ParseJsonFormInputMap(c *gin.Context) (map[string]any, error) {
 	contentType := c.ContentType()
-	fmt.Println("context-type", contentType)
 	postMap := make(map[string]any)
 	if contentType == "application/json" {
 		var (

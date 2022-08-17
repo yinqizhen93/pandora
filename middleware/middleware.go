@@ -15,8 +15,8 @@ type Middleware struct {
 	accessCtrl access.RBAC  // only init rbac when use
 }
 
-func NewMiddleware(logger logger.Logger, db *ent.Client) *Middleware {
-	return &Middleware{logger: logger, db: db}
+func NewMiddleware(logger logger.Logger, db *ent.Client, cache cache.Cacher) *Middleware {
+	return &Middleware{logger: logger, db: db, cache: cache}
 }
 
 var ProviderSet = wire.NewSet(NewMiddleware)

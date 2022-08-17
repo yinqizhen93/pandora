@@ -3,8 +3,10 @@ package middleware
 import (
 	"bytes"
 	"context"
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"net/http"
+	"runtime/debug"
 	"sync"
 	"time"
 )
@@ -40,7 +42,7 @@ func (mdw *Middleware) TimeOut(t int) gin.HandlerFunc {
 				// recovery错误，避免让其他goroutine panic
 				if err := recover(); err != nil {
 					// 通知主协程panic发生
-					panicChan <- err
+					panicChan <- fmt.Sprintf("程序异常:%s; %s", err, debug.Stack()) // todo err添加堆栈信息
 				}
 			}()
 			c.Next() // 这里面的Write方法不会写入到最原始的Writer中

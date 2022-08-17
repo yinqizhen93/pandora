@@ -10,6 +10,7 @@ import (
 	"pandora/ent/migrate"
 
 	"pandora/ent/casbinrule"
+	"pandora/ent/material"
 	"pandora/ent/role"
 	"pandora/ent/stock"
 	"pandora/ent/task"
@@ -27,6 +28,8 @@ type Client struct {
 	Schema *migrate.Schema
 	// CasbinRule is the client for interacting with the CasbinRule builders.
 	CasbinRule *CasbinRuleClient
+	// Material is the client for interacting with the Material builders.
+	Material *MaterialClient
 	// Role is the client for interacting with the Role builders.
 	Role *RoleClient
 	// Stock is the client for interacting with the Stock builders.
@@ -49,6 +52,7 @@ func NewClient(opts ...Option) *Client {
 func (c *Client) init() {
 	c.Schema = migrate.NewSchema(c.driver)
 	c.CasbinRule = NewCasbinRuleClient(c.config)
+	c.Material = NewMaterialClient(c.config)
 	c.Role = NewRoleClient(c.config)
 	c.Stock = NewStockClient(c.config)
 	c.Task = NewTaskClient(c.config)
@@ -87,6 +91,7 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		ctx:        ctx,
 		config:     cfg,
 		CasbinRule: NewCasbinRuleClient(cfg),
+		Material:   NewMaterialClient(cfg),
 		Role:       NewRoleClient(cfg),
 		Stock:      NewStockClient(cfg),
 		Task:       NewTaskClient(cfg),
@@ -111,6 +116,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		ctx:        ctx,
 		config:     cfg,
 		CasbinRule: NewCasbinRuleClient(cfg),
+		Material:   NewMaterialClient(cfg),
 		Role:       NewRoleClient(cfg),
 		Stock:      NewStockClient(cfg),
 		Task:       NewTaskClient(cfg),
@@ -145,6 +151,7 @@ func (c *Client) Close() error {
 // In order to add hooks to a specific client, call: `client.Node.Use(...)`.
 func (c *Client) Use(hooks ...Hook) {
 	c.CasbinRule.Use(hooks...)
+	c.Material.Use(hooks...)
 	c.Role.Use(hooks...)
 	c.Stock.Use(hooks...)
 	c.Task.Use(hooks...)
@@ -239,6 +246,96 @@ func (c *CasbinRuleClient) GetX(ctx context.Context, id int) *CasbinRule {
 // Hooks returns the client hooks.
 func (c *CasbinRuleClient) Hooks() []Hook {
 	return c.hooks.CasbinRule
+}
+
+// MaterialClient is a client for the Material schema.
+type MaterialClient struct {
+	config
+}
+
+// NewMaterialClient returns a client for the Material from the given config.
+func NewMaterialClient(c config) *MaterialClient {
+	return &MaterialClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `material.Hooks(f(g(h())))`.
+func (c *MaterialClient) Use(hooks ...Hook) {
+	c.hooks.Material = append(c.hooks.Material, hooks...)
+}
+
+// Create returns a create builder for Material.
+func (c *MaterialClient) Create() *MaterialCreate {
+	mutation := newMaterialMutation(c.config, OpCreate)
+	return &MaterialCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of Material entities.
+func (c *MaterialClient) CreateBulk(builders ...*MaterialCreate) *MaterialCreateBulk {
+	return &MaterialCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for Material.
+func (c *MaterialClient) Update() *MaterialUpdate {
+	mutation := newMaterialMutation(c.config, OpUpdate)
+	return &MaterialUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *MaterialClient) UpdateOne(m *Material) *MaterialUpdateOne {
+	mutation := newMaterialMutation(c.config, OpUpdateOne, withMaterial(m))
+	return &MaterialUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *MaterialClient) UpdateOneID(id int) *MaterialUpdateOne {
+	mutation := newMaterialMutation(c.config, OpUpdateOne, withMaterialID(id))
+	return &MaterialUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for Material.
+func (c *MaterialClient) Delete() *MaterialDelete {
+	mutation := newMaterialMutation(c.config, OpDelete)
+	return &MaterialDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a delete builder for the given entity.
+func (c *MaterialClient) DeleteOne(m *Material) *MaterialDeleteOne {
+	return c.DeleteOneID(m.ID)
+}
+
+// DeleteOneID returns a delete builder for the given id.
+func (c *MaterialClient) DeleteOneID(id int) *MaterialDeleteOne {
+	builder := c.Delete().Where(material.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &MaterialDeleteOne{builder}
+}
+
+// Query returns a query builder for Material.
+func (c *MaterialClient) Query() *MaterialQuery {
+	return &MaterialQuery{
+		config: c.config,
+	}
+}
+
+// Get returns a Material entity by its id.
+func (c *MaterialClient) Get(ctx context.Context, id int) (*Material, error) {
+	return c.Query().Where(material.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *MaterialClient) GetX(ctx context.Context, id int) *Material {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// Hooks returns the client hooks.
+func (c *MaterialClient) Hooks() []Hook {
+	return c.hooks.Material
 }
 
 // RoleClient is a client for the Role schema.

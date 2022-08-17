@@ -25,6 +25,21 @@ var (
 		Columns:    CasbinRulesColumns,
 		PrimaryKey: []*schema.Column{CasbinRulesColumns[0]},
 	}
+	// MaterialsColumns holds the columns for the "materials" table.
+	MaterialsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "name", Type: field.TypeString},
+		{Name: "code", Type: field.TypeString},
+		{Name: "describe", Type: field.TypeString, Size: 2147483647},
+		{Name: "price", Type: field.TypeFloat64},
+		{Name: "buy_date", Type: field.TypeTime},
+	}
+	// MaterialsTable holds the schema information for the "materials" table.
+	MaterialsTable = &schema.Table{
+		Name:       "materials",
+		Columns:    MaterialsColumns,
+		PrimaryKey: []*schema.Column{MaterialsColumns[0]},
+	}
 	// RolesColumns holds the columns for the "roles" table.
 	RolesColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
@@ -122,6 +137,7 @@ var (
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{
 		CasbinRulesTable,
+		MaterialsTable,
 		RolesTable,
 		StocksTable,
 		TasksTable,

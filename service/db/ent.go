@@ -9,6 +9,7 @@ import (
 	"github.com/google/wire"
 	"log"
 	"pandora/ent"
+	"pandora/ent/migrate"
 	"pandora/service/cache"
 	"pandora/service/config"
 )
@@ -28,9 +29,15 @@ func NewEntClient(cache cache.Cacher, conf config.Config) *ent.Client {
 	// add runtime hooks
 	client.Use(removeCache(cache))
 	// Run the auto migration tool.
-	if err := client.Schema.Create(context.Background()); err != nil {
+	log.Println("start to migrate schema..")
+	if err := client.Schema.Create(
+		context.Background(),
+		migrate.WithDropIndex(true),
+		migrate.WithDropColumn(true),
+	); err != nil {
 		log.Fatalf("failed creating schema resources: %v", err)
 	}
+	log.Println("successful migrate schema..")
 	return client
 }
 
