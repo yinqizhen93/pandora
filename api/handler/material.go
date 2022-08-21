@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"net/http"
@@ -98,13 +99,18 @@ func (h *Handler) EditMaterial(c *gin.Context) {
 
 	for {
 		msg, ok := <-cli.(*ws.Client).ReceiveStream
+		a := make(map[string]interface{})
+		if err := json.Unmarshal(msg, &a); err != nil {
+			panic(err)
+		}
+		fmt.Println(a)
 		if !ok {
 			return
 		}
 		// Send current time to clients message channel
-		now := time.Now().Format("2006-01-02 15:04:05")
-		currentTime := fmt.Sprintf("The Current Time Is %v with msg %v", now, msg)
-		ws.WSHub.Message <- []byte(currentTime)
+		//now := time.Now().Format("2006-01-02 15:04:05")
+		//currentTime := fmt.Sprintf("The Current Time Is %v with msg %v", now, msg)
+		ws.WSHub.Message <- msg
 	}
 
 	//go func() {
