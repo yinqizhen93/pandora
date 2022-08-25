@@ -65,8 +65,9 @@ type Client struct {
 //
 func (c *Client) keepReceive() {
 	defer func() {
-		// 异常退出，删除client, 关闭连接
+		// 退出，删除client, 关闭连接
 		WSHub.unregister <- c
+		fmt.Println("ws client is closing...")
 		c.conn.Close()
 	}()
 	c.conn.SetReadLimit(maxMessageSize)
@@ -147,7 +148,7 @@ func WebSocketHandler() gin.HandlerFunc {
 			ReceiveStream: make(chan []byte, 256),
 			sendStream:    make(chan []byte, 256),
 		}
-		fmt.Println("find new client")
+		fmt.Println("find new ws client")
 		WSHub.register <- client
 		// Allow collection of memory referenced by the caller by doing all work in
 		// new goroutines.

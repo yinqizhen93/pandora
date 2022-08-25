@@ -10,29 +10,36 @@ var Stream = NewSSEvent()
 
 const SSEClient = "sseClient"
 
+// Message is what server sent to client, the client subscribe different message by Message.Kind
+// 前端通过kind 区分不同的消息
+type Message struct {
+	Pipeline string
+	Data     any
+}
+
 // SSEvent  keeps a list of clients those are currently attached
 //and broadcasting events to those clients.
 type SSEvent struct {
 	// Events are pushed to this channel by the main events-gathering routine
-	Message chan string
+	Message chan Message
 	// New client connections
-	NewClient chan chan string
+	NewClient chan chan Message
 	// Closed client connections
-	CloseClient chan chan string
+	CloseClient chan chan Message
 	// Total client connections
-	Clients map[chan string]struct{}
+	Clients map[chan Message]struct{}
 }
 
 // ClientChan New event messages are broadcast to all registered client connection channels
-type ClientChan chan string
+type ClientChan chan Message
 
 // NewSSEvent Initialize event and Start procnteessing requests
 func NewSSEvent() (event *SSEvent) {
 	event = &SSEvent{
-		Message:     make(chan string),
-		NewClient:   make(chan chan string),
-		CloseClient: make(chan chan string),
-		Clients:     make(map[chan string]struct{}),
+		Message:     make(chan Message),
+		NewClient:   make(chan chan Message),
+		CloseClient: make(chan chan Message),
+		Clients:     make(map[chan Message]struct{}),
 	}
 	go event.listen()
 	return
@@ -72,12 +79,12 @@ func (sse *SSEvent) SSEHandler() gin.HandlerFunc {
 		clientChan := make(ClientChan)
 		c.Set("sseClient", clientChan)
 		// Send new connection to event server
-		fmt.Println("create new client...")
+		fmt.Println("create new sse client...")
 		sse.NewClient <- clientChan
-		fmt.Println("new client created...")
+		fmt.Println("new sse client created...")
 		defer func() {
 			// Send closed connection to event server
-			fmt.Println("client is closing...")
+			fmt.Println("sse client is closing...")
 			sse.CloseClient <- clientChan
 		}()
 		go func() {

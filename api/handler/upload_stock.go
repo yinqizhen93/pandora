@@ -8,6 +8,7 @@ import (
 	"pandora/api"
 	"pandora/ent"
 	"pandora/ent/task"
+	"pandora/service"
 	"strconv"
 	"time"
 )
@@ -34,6 +35,7 @@ func (h *Handler) UploadStockOnce(c *gin.Context) {
 		header := rows[0]
 		bulk := make([]*ent.StockCreate, len(rows)-1)
 		for ri, r := range rows[1:] {
+			time.Sleep(time.Millisecond * 10)
 			sc := h.db.Stock.Create()
 			for i, c := range header {
 				switch c {
@@ -61,6 +63,8 @@ func (h *Handler) UploadStockOnce(c *gin.Context) {
 					sc.SetTurnover(strToFloat32(r[i]))
 				}
 			}
+			progress := fmt.Sprintf("%.2f", 100*float64(ri)/float64(len(rows)-1)) + "%"
+			service.Stream.Message <- service.Message{Pipeline: "message", Data: progress}
 			bulk[ri] = sc
 		}
 		//ctx := c.Request.Context()

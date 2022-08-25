@@ -39,7 +39,7 @@ func (h *Hub) listen() {
 	for {
 		select {
 		case client := <-h.register:
-			fmt.Println("registering new client")
+			fmt.Println("registering new ws client")
 			h.clients[client] = struct{}{}
 		case client := <-h.unregister:
 			// todo 这里的OK 判断是否必须？
