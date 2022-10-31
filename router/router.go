@@ -115,9 +115,9 @@ func (ar *AppRouter) addTaskRouter() {
 }
 
 func (ar *AppRouter) addSSERouter() {
-	r := ar.router.Group("/sse", ar.mdw.JWTAuth(), service.Stream.SSEHandler(), ar.mdw.SSEHeaderMiddleware()) // JWTAuth授权
+	r := ar.router.Group("/sse", ar.mdw.JWTAuth(), ar.mdw.SSEHeaderMiddleware()) // JWTAuth授权
 	{
-		r.GET("/task", ar.handler.StartTaskSSE)
+		r.GET("/task", service.Stream.SSEHandler)
 	}
 }
 

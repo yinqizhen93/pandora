@@ -3,6 +3,7 @@ package service
 import (
 	"fmt"
 	"github.com/gin-gonic/gin"
+	"io"
 	"log"
 )
 
@@ -73,7 +74,8 @@ func (sse *SSEvent) listen() {
 	}
 }
 
-func (sse *SSEvent) SSEHandler() gin.HandlerFunc {
+// SSEHandlerMdw act as a middleware
+func (sse *SSEvent) SSEHandlerMdw() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		// Initialize client channel
 		clientChan := make(ClientChan)
@@ -95,4 +97,38 @@ func (sse *SSEvent) SSEHandler() gin.HandlerFunc {
 		}()
 		c.Next()
 	}
+}
+
+// SSEHandler act as a handler
+func (sse *SSEvent) SSEHandler(c *gin.Context) {
+	//return func(c *gin.Context) {
+	// Initialize client channel
+	clientChan := make(ClientChan)
+	c.Set("sseClient", clientChan)
+	// Send new connection to event server
+	fmt.Println("create new sse client...")
+	sse.NewClient <- clientChan
+	fmt.Println("new sse client created...")
+	defer func() {
+		// Send closed connection to event server
+		fmt.Println("sse client is closing...")
+		sse.CloseClient <- clientChan
+	}()
+	go func() { // todo 什么时候会触发这个
+		// Send connection that is closed by client to event server
+		<-c.Done()
+		fmt.Println("request context is closed...")
+		sse.CloseClient <- clientChan
+	}()
+	c.Stream(func(w io.Writer) bool {
+		// Stream message to client from message channel
+		if msg, ok := <-clientChan; ok {
+			fmt.Println(msg)
+			c.SSEvent(msg.Pipeline, msg.Data)
+			return true
+		}
+		return false
+	})
+	//	c.Next()
+	//}
 }
