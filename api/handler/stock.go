@@ -221,11 +221,17 @@ func (h Handler) DownloadStock(c *gin.Context) {
 	//	c.JSON(200, api.FailResponse(3002, "生成Excel失败"))
 	//}
 	//buff, err := file.WriteToBuffer()
+
 	fileName := "stock.xlsx"
-	c.Header("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
-	c.Header("Content-Disposition", fmt.Sprintf(`attachment; filename="%s"`, fileName))
-	c.Header("response-type", "blob")
-	file.Write(c.Writer)
+	//c.Header("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+	//c.Header("Content-Disposition", fmt.Sprintf(`attachment; filename="%s"`, fileName))
+	//c.Header("response-type", "blob")
+	//file.Write(c.Writer)
+
 	//c.Writer.Write(buff.Bytes())
-	//c.Data(http.StatusOK, contentType, buff.Bytes())
+	//c.Data(h   ttp.StatusOK, contentType, buff.Bytes())
+	c.Writer.Header().Add("Content-Type", "application/octet-stream")
+	c.Writer.Header().Add("Content-Disposition", "attachment;filename="+fileName)
+	c.Writer.Header().Add("Content-Transfer-Encoding", "binary")
+	_ = file.Write(c.Writer)
 }
