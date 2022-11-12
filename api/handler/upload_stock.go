@@ -8,7 +8,7 @@ import (
 	"pandora/api"
 	"pandora/ent"
 	"pandora/ent/task"
-	"pandora/service"
+	"pandora/service/sse"
 	"strconv"
 	"time"
 )
@@ -64,7 +64,7 @@ func (h *Handler) UploadStockOnce(c *gin.Context) {
 				}
 			}
 			progress := fmt.Sprintf("%.2f", 100*float64(ri)/float64(len(rows)-1)) + "%"
-			service.Stream.Message <- service.Message{Pipeline: "message", Data: progress}
+			h.sse.Message <- sse.Message{Pipeline: "message", Data: progress}
 			bulk[ri] = sc
 		}
 		//ctx := c.Request.Context()

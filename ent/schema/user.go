@@ -18,15 +18,21 @@ func (User) Fields() []ent.Field {
 		field.String("username").Unique(),
 		field.String("password").Sensitive(), // Sensitive Fields不会被打印，并且在编码时将被忽略
 		field.String("email").Unique(),
-		field.String("refreshToken").StorageKey("refresh_token").Default(""),
-		field.Time("createdAt").StorageKey("created_at").Default(time.Now).Immutable(),
-		field.Time("updatedAt").StorageKey("updated_at").Default(time.Now).UpdateDefault(time.Now),
+		// 字段名建议写成下划线隔开，代码生成时会自动变为PhoneNumber, 如果和数据库字段名不一致，可用StorageKey()指明
+		field.String("phone_number").Unique(),
+		field.String("refresh_token").Default(""),
+		field.Int8("is_active").Default(1),
+		field.Time("last_login").Optional().Nillable(),
+		field.Time("created_at").Default(time.Now).Immutable(),
+		field.Time("updated_at").Default(time.Now).UpdateDefault(time.Now),
 	}
 }
 
 // Edges of the User.
+// M:M relation, one user got many roles, and one role may can belong to mang users
 func (User) Edges() []ent.Edge {
 	return []ent.Edge{
-		edge.To("roles", Role.Type),
+		edge.To("roles", Role.Type).Required(),                     // Required()使得创建user时， 必须指定role
+		edge.To("department", Department.Type).Unique().Required(), // Unique()表明关系唯一, m or 1 to 1
 	}
 }

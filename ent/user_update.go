@@ -6,6 +6,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"pandora/ent/department"
 	"pandora/ent/predicate"
 	"pandora/ent/role"
 	"pandora/ent/user"
@@ -47,13 +48,19 @@ func (uu *UserUpdate) SetEmail(s string) *UserUpdate {
 	return uu
 }
 
-// SetRefreshToken sets the "refreshToken" field.
+// SetPhoneNumber sets the "phone_number" field.
+func (uu *UserUpdate) SetPhoneNumber(s string) *UserUpdate {
+	uu.mutation.SetPhoneNumber(s)
+	return uu
+}
+
+// SetRefreshToken sets the "refresh_token" field.
 func (uu *UserUpdate) SetRefreshToken(s string) *UserUpdate {
 	uu.mutation.SetRefreshToken(s)
 	return uu
 }
 
-// SetNillableRefreshToken sets the "refreshToken" field if the given value is not nil.
+// SetNillableRefreshToken sets the "refresh_token" field if the given value is not nil.
 func (uu *UserUpdate) SetNillableRefreshToken(s *string) *UserUpdate {
 	if s != nil {
 		uu.SetRefreshToken(*s)
@@ -61,7 +68,48 @@ func (uu *UserUpdate) SetNillableRefreshToken(s *string) *UserUpdate {
 	return uu
 }
 
-// SetUpdatedAt sets the "updatedAt" field.
+// SetIsActive sets the "is_active" field.
+func (uu *UserUpdate) SetIsActive(i int8) *UserUpdate {
+	uu.mutation.ResetIsActive()
+	uu.mutation.SetIsActive(i)
+	return uu
+}
+
+// SetNillableIsActive sets the "is_active" field if the given value is not nil.
+func (uu *UserUpdate) SetNillableIsActive(i *int8) *UserUpdate {
+	if i != nil {
+		uu.SetIsActive(*i)
+	}
+	return uu
+}
+
+// AddIsActive adds i to the "is_active" field.
+func (uu *UserUpdate) AddIsActive(i int8) *UserUpdate {
+	uu.mutation.AddIsActive(i)
+	return uu
+}
+
+// SetLastLogin sets the "last_login" field.
+func (uu *UserUpdate) SetLastLogin(t time.Time) *UserUpdate {
+	uu.mutation.SetLastLogin(t)
+	return uu
+}
+
+// SetNillableLastLogin sets the "last_login" field if the given value is not nil.
+func (uu *UserUpdate) SetNillableLastLogin(t *time.Time) *UserUpdate {
+	if t != nil {
+		uu.SetLastLogin(*t)
+	}
+	return uu
+}
+
+// ClearLastLogin clears the value of the "last_login" field.
+func (uu *UserUpdate) ClearLastLogin() *UserUpdate {
+	uu.mutation.ClearLastLogin()
+	return uu
+}
+
+// SetUpdatedAt sets the "updated_at" field.
 func (uu *UserUpdate) SetUpdatedAt(t time.Time) *UserUpdate {
 	uu.mutation.SetUpdatedAt(t)
 	return uu
@@ -80,6 +128,17 @@ func (uu *UserUpdate) AddRoles(r ...*Role) *UserUpdate {
 		ids[i] = r[i].ID
 	}
 	return uu.AddRoleIDs(ids...)
+}
+
+// SetDepartmentID sets the "department" edge to the Department entity by ID.
+func (uu *UserUpdate) SetDepartmentID(id int) *UserUpdate {
+	uu.mutation.SetDepartmentID(id)
+	return uu
+}
+
+// SetDepartment sets the "department" edge to the Department entity.
+func (uu *UserUpdate) SetDepartment(d *Department) *UserUpdate {
+	return uu.SetDepartmentID(d.ID)
 }
 
 // Mutation returns the UserMutation object of the builder.
@@ -108,6 +167,12 @@ func (uu *UserUpdate) RemoveRoles(r ...*Role) *UserUpdate {
 	return uu.RemoveRoleIDs(ids...)
 }
 
+// ClearDepartment clears the "department" edge to the Department entity.
+func (uu *UserUpdate) ClearDepartment() *UserUpdate {
+	uu.mutation.ClearDepartment()
+	return uu
+}
+
 // Save executes the query and returns the number of nodes affected by the update operation.
 func (uu *UserUpdate) Save(ctx context.Context) (int, error) {
 	var (
@@ -116,12 +181,18 @@ func (uu *UserUpdate) Save(ctx context.Context) (int, error) {
 	)
 	uu.defaults()
 	if len(uu.hooks) == 0 {
+		if err = uu.check(); err != nil {
+			return 0, err
+		}
 		affected, err = uu.sqlSave(ctx)
 	} else {
 		var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
 			mutation, ok := m.(*UserMutation)
 			if !ok {
 				return nil, fmt.Errorf("unexpected mutation type %T", m)
+			}
+			if err = uu.check(); err != nil {
+				return 0, err
 			}
 			uu.mutation = mutation
 			affected, err = uu.sqlSave(ctx)
@@ -171,6 +242,14 @@ func (uu *UserUpdate) defaults() {
 	}
 }
 
+// check runs all checks and user-defined validators on the builder.
+func (uu *UserUpdate) check() error {
+	if _, ok := uu.mutation.DepartmentID(); uu.mutation.DepartmentCleared() && !ok {
+		return errors.New(`ent: clearing a required unique edge "User.department"`)
+	}
+	return nil
+}
+
 func (uu *UserUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	_spec := &sqlgraph.UpdateSpec{
 		Node: &sqlgraph.NodeSpec{
@@ -210,11 +289,45 @@ func (uu *UserUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Column: user.FieldEmail,
 		})
 	}
+	if value, ok := uu.mutation.PhoneNumber(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Value:  value,
+			Column: user.FieldPhoneNumber,
+		})
+	}
 	if value, ok := uu.mutation.RefreshToken(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
 			Value:  value,
 			Column: user.FieldRefreshToken,
+		})
+	}
+	if value, ok := uu.mutation.IsActive(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeInt8,
+			Value:  value,
+			Column: user.FieldIsActive,
+		})
+	}
+	if value, ok := uu.mutation.AddedIsActive(); ok {
+		_spec.Fields.Add = append(_spec.Fields.Add, &sqlgraph.FieldSpec{
+			Type:   field.TypeInt8,
+			Value:  value,
+			Column: user.FieldIsActive,
+		})
+	}
+	if value, ok := uu.mutation.LastLogin(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeTime,
+			Value:  value,
+			Column: user.FieldLastLogin,
+		})
+	}
+	if uu.mutation.LastLoginCleared() {
+		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
+			Type:   field.TypeTime,
+			Column: user.FieldLastLogin,
 		})
 	}
 	if value, ok := uu.mutation.UpdatedAt(); ok {
@@ -278,6 +391,41 @@ func (uu *UserUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if uu.mutation.DepartmentCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   user.DepartmentTable,
+			Columns: []string{user.DepartmentColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: department.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := uu.mutation.DepartmentIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   user.DepartmentTable,
+			Columns: []string{user.DepartmentColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: department.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if n, err = sqlgraph.UpdateNodes(ctx, uu.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{user.Label}
@@ -315,13 +463,19 @@ func (uuo *UserUpdateOne) SetEmail(s string) *UserUpdateOne {
 	return uuo
 }
 
-// SetRefreshToken sets the "refreshToken" field.
+// SetPhoneNumber sets the "phone_number" field.
+func (uuo *UserUpdateOne) SetPhoneNumber(s string) *UserUpdateOne {
+	uuo.mutation.SetPhoneNumber(s)
+	return uuo
+}
+
+// SetRefreshToken sets the "refresh_token" field.
 func (uuo *UserUpdateOne) SetRefreshToken(s string) *UserUpdateOne {
 	uuo.mutation.SetRefreshToken(s)
 	return uuo
 }
 
-// SetNillableRefreshToken sets the "refreshToken" field if the given value is not nil.
+// SetNillableRefreshToken sets the "refresh_token" field if the given value is not nil.
 func (uuo *UserUpdateOne) SetNillableRefreshToken(s *string) *UserUpdateOne {
 	if s != nil {
 		uuo.SetRefreshToken(*s)
@@ -329,7 +483,48 @@ func (uuo *UserUpdateOne) SetNillableRefreshToken(s *string) *UserUpdateOne {
 	return uuo
 }
 
-// SetUpdatedAt sets the "updatedAt" field.
+// SetIsActive sets the "is_active" field.
+func (uuo *UserUpdateOne) SetIsActive(i int8) *UserUpdateOne {
+	uuo.mutation.ResetIsActive()
+	uuo.mutation.SetIsActive(i)
+	return uuo
+}
+
+// SetNillableIsActive sets the "is_active" field if the given value is not nil.
+func (uuo *UserUpdateOne) SetNillableIsActive(i *int8) *UserUpdateOne {
+	if i != nil {
+		uuo.SetIsActive(*i)
+	}
+	return uuo
+}
+
+// AddIsActive adds i to the "is_active" field.
+func (uuo *UserUpdateOne) AddIsActive(i int8) *UserUpdateOne {
+	uuo.mutation.AddIsActive(i)
+	return uuo
+}
+
+// SetLastLogin sets the "last_login" field.
+func (uuo *UserUpdateOne) SetLastLogin(t time.Time) *UserUpdateOne {
+	uuo.mutation.SetLastLogin(t)
+	return uuo
+}
+
+// SetNillableLastLogin sets the "last_login" field if the given value is not nil.
+func (uuo *UserUpdateOne) SetNillableLastLogin(t *time.Time) *UserUpdateOne {
+	if t != nil {
+		uuo.SetLastLogin(*t)
+	}
+	return uuo
+}
+
+// ClearLastLogin clears the value of the "last_login" field.
+func (uuo *UserUpdateOne) ClearLastLogin() *UserUpdateOne {
+	uuo.mutation.ClearLastLogin()
+	return uuo
+}
+
+// SetUpdatedAt sets the "updated_at" field.
 func (uuo *UserUpdateOne) SetUpdatedAt(t time.Time) *UserUpdateOne {
 	uuo.mutation.SetUpdatedAt(t)
 	return uuo
@@ -348,6 +543,17 @@ func (uuo *UserUpdateOne) AddRoles(r ...*Role) *UserUpdateOne {
 		ids[i] = r[i].ID
 	}
 	return uuo.AddRoleIDs(ids...)
+}
+
+// SetDepartmentID sets the "department" edge to the Department entity by ID.
+func (uuo *UserUpdateOne) SetDepartmentID(id int) *UserUpdateOne {
+	uuo.mutation.SetDepartmentID(id)
+	return uuo
+}
+
+// SetDepartment sets the "department" edge to the Department entity.
+func (uuo *UserUpdateOne) SetDepartment(d *Department) *UserUpdateOne {
+	return uuo.SetDepartmentID(d.ID)
 }
 
 // Mutation returns the UserMutation object of the builder.
@@ -376,6 +582,12 @@ func (uuo *UserUpdateOne) RemoveRoles(r ...*Role) *UserUpdateOne {
 	return uuo.RemoveRoleIDs(ids...)
 }
 
+// ClearDepartment clears the "department" edge to the Department entity.
+func (uuo *UserUpdateOne) ClearDepartment() *UserUpdateOne {
+	uuo.mutation.ClearDepartment()
+	return uuo
+}
+
 // Select allows selecting one or more fields (columns) of the returned entity.
 // The default is selecting all fields defined in the entity schema.
 func (uuo *UserUpdateOne) Select(field string, fields ...string) *UserUpdateOne {
@@ -391,12 +603,18 @@ func (uuo *UserUpdateOne) Save(ctx context.Context) (*User, error) {
 	)
 	uuo.defaults()
 	if len(uuo.hooks) == 0 {
+		if err = uuo.check(); err != nil {
+			return nil, err
+		}
 		node, err = uuo.sqlSave(ctx)
 	} else {
 		var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
 			mutation, ok := m.(*UserMutation)
 			if !ok {
 				return nil, fmt.Errorf("unexpected mutation type %T", m)
+			}
+			if err = uuo.check(); err != nil {
+				return nil, err
 			}
 			uuo.mutation = mutation
 			node, err = uuo.sqlSave(ctx)
@@ -444,6 +662,14 @@ func (uuo *UserUpdateOne) defaults() {
 		v := user.UpdateDefaultUpdatedAt()
 		uuo.mutation.SetUpdatedAt(v)
 	}
+}
+
+// check runs all checks and user-defined validators on the builder.
+func (uuo *UserUpdateOne) check() error {
+	if _, ok := uuo.mutation.DepartmentID(); uuo.mutation.DepartmentCleared() && !ok {
+		return errors.New(`ent: clearing a required unique edge "User.department"`)
+	}
+	return nil
 }
 
 func (uuo *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) {
@@ -502,11 +728,45 @@ func (uuo *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) 
 			Column: user.FieldEmail,
 		})
 	}
+	if value, ok := uuo.mutation.PhoneNumber(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Value:  value,
+			Column: user.FieldPhoneNumber,
+		})
+	}
 	if value, ok := uuo.mutation.RefreshToken(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
 			Value:  value,
 			Column: user.FieldRefreshToken,
+		})
+	}
+	if value, ok := uuo.mutation.IsActive(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeInt8,
+			Value:  value,
+			Column: user.FieldIsActive,
+		})
+	}
+	if value, ok := uuo.mutation.AddedIsActive(); ok {
+		_spec.Fields.Add = append(_spec.Fields.Add, &sqlgraph.FieldSpec{
+			Type:   field.TypeInt8,
+			Value:  value,
+			Column: user.FieldIsActive,
+		})
+	}
+	if value, ok := uuo.mutation.LastLogin(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeTime,
+			Value:  value,
+			Column: user.FieldLastLogin,
+		})
+	}
+	if uuo.mutation.LastLoginCleared() {
+		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
+			Type:   field.TypeTime,
+			Column: user.FieldLastLogin,
 		})
 	}
 	if value, ok := uuo.mutation.UpdatedAt(); ok {
@@ -562,6 +822,41 @@ func (uuo *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) 
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeInt,
 					Column: role.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if uuo.mutation.DepartmentCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   user.DepartmentTable,
+			Columns: []string{user.DepartmentColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: department.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := uuo.mutation.DepartmentIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   user.DepartmentTable,
+			Columns: []string{user.DepartmentColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: department.FieldID,
 				},
 			},
 		}

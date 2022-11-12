@@ -9,6 +9,7 @@ import (
 	"pandora/ent/predicate"
 	"pandora/ent/role"
 	"pandora/ent/user"
+	"time"
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
@@ -34,15 +35,83 @@ func (ru *RoleUpdate) SetName(s string) *RoleUpdate {
 	return ru
 }
 
-// SetAccessApi sets the "accessApi" field.
-func (ru *RoleUpdate) SetAccessApi(s string) *RoleUpdate {
-	ru.mutation.SetAccessApi(s)
+// SetDescript sets the "descript" field.
+func (ru *RoleUpdate) SetDescript(s string) *RoleUpdate {
+	ru.mutation.SetDescript(s)
 	return ru
 }
 
-// SetAccessMethod sets the "accessMethod" field.
+// SetStatus sets the "status" field.
+func (ru *RoleUpdate) SetStatus(i int8) *RoleUpdate {
+	ru.mutation.ResetStatus()
+	ru.mutation.SetStatus(i)
+	return ru
+}
+
+// SetNillableStatus sets the "status" field if the given value is not nil.
+func (ru *RoleUpdate) SetNillableStatus(i *int8) *RoleUpdate {
+	if i != nil {
+		ru.SetStatus(*i)
+	}
+	return ru
+}
+
+// AddStatus adds i to the "status" field.
+func (ru *RoleUpdate) AddStatus(i int8) *RoleUpdate {
+	ru.mutation.AddStatus(i)
+	return ru
+}
+
+// SetIsDeleted sets the "is_deleted" field.
+func (ru *RoleUpdate) SetIsDeleted(i int8) *RoleUpdate {
+	ru.mutation.ResetIsDeleted()
+	ru.mutation.SetIsDeleted(i)
+	return ru
+}
+
+// SetNillableIsDeleted sets the "is_deleted" field if the given value is not nil.
+func (ru *RoleUpdate) SetNillableIsDeleted(i *int8) *RoleUpdate {
+	if i != nil {
+		ru.SetIsDeleted(*i)
+	}
+	return ru
+}
+
+// AddIsDeleted adds i to the "is_deleted" field.
+func (ru *RoleUpdate) AddIsDeleted(i int8) *RoleUpdate {
+	ru.mutation.AddIsDeleted(i)
+	return ru
+}
+
+// SetAccessAPI sets the "access_api" field.
+func (ru *RoleUpdate) SetAccessAPI(s string) *RoleUpdate {
+	ru.mutation.SetAccessAPI(s)
+	return ru
+}
+
+// SetAccessMethod sets the "access_method" field.
 func (ru *RoleUpdate) SetAccessMethod(s string) *RoleUpdate {
 	ru.mutation.SetAccessMethod(s)
+	return ru
+}
+
+// SetCreatedAt sets the "created_at" field.
+func (ru *RoleUpdate) SetCreatedAt(t time.Time) *RoleUpdate {
+	ru.mutation.SetCreatedAt(t)
+	return ru
+}
+
+// SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
+func (ru *RoleUpdate) SetNillableCreatedAt(t *time.Time) *RoleUpdate {
+	if t != nil {
+		ru.SetCreatedAt(*t)
+	}
+	return ru
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (ru *RoleUpdate) SetUpdatedAt(t time.Time) *RoleUpdate {
+	ru.mutation.SetUpdatedAt(t)
 	return ru
 }
 
@@ -93,6 +162,7 @@ func (ru *RoleUpdate) Save(ctx context.Context) (int, error) {
 		err      error
 		affected int
 	)
+	ru.defaults()
 	if len(ru.hooks) == 0 {
 		affected, err = ru.sqlSave(ctx)
 	} else {
@@ -141,6 +211,14 @@ func (ru *RoleUpdate) ExecX(ctx context.Context) {
 	}
 }
 
+// defaults sets the default values of the builder before save.
+func (ru *RoleUpdate) defaults() {
+	if _, ok := ru.mutation.UpdatedAt(); !ok {
+		v := role.UpdateDefaultUpdatedAt()
+		ru.mutation.SetUpdatedAt(v)
+	}
+}
+
 func (ru *RoleUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	_spec := &sqlgraph.UpdateSpec{
 		Node: &sqlgraph.NodeSpec{
@@ -166,11 +244,46 @@ func (ru *RoleUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Column: role.FieldName,
 		})
 	}
-	if value, ok := ru.mutation.AccessApi(); ok {
+	if value, ok := ru.mutation.Descript(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
 			Value:  value,
-			Column: role.FieldAccessApi,
+			Column: role.FieldDescript,
+		})
+	}
+	if value, ok := ru.mutation.Status(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeInt8,
+			Value:  value,
+			Column: role.FieldStatus,
+		})
+	}
+	if value, ok := ru.mutation.AddedStatus(); ok {
+		_spec.Fields.Add = append(_spec.Fields.Add, &sqlgraph.FieldSpec{
+			Type:   field.TypeInt8,
+			Value:  value,
+			Column: role.FieldStatus,
+		})
+	}
+	if value, ok := ru.mutation.IsDeleted(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeInt8,
+			Value:  value,
+			Column: role.FieldIsDeleted,
+		})
+	}
+	if value, ok := ru.mutation.AddedIsDeleted(); ok {
+		_spec.Fields.Add = append(_spec.Fields.Add, &sqlgraph.FieldSpec{
+			Type:   field.TypeInt8,
+			Value:  value,
+			Column: role.FieldIsDeleted,
+		})
+	}
+	if value, ok := ru.mutation.AccessAPI(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Value:  value,
+			Column: role.FieldAccessAPI,
 		})
 	}
 	if value, ok := ru.mutation.AccessMethod(); ok {
@@ -178,6 +291,20 @@ func (ru *RoleUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Type:   field.TypeString,
 			Value:  value,
 			Column: role.FieldAccessMethod,
+		})
+	}
+	if value, ok := ru.mutation.CreatedAt(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeTime,
+			Value:  value,
+			Column: role.FieldCreatedAt,
+		})
+	}
+	if value, ok := ru.mutation.UpdatedAt(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeTime,
+			Value:  value,
+			Column: role.FieldUpdatedAt,
 		})
 	}
 	if ru.mutation.UsersCleared() {
@@ -259,15 +386,83 @@ func (ruo *RoleUpdateOne) SetName(s string) *RoleUpdateOne {
 	return ruo
 }
 
-// SetAccessApi sets the "accessApi" field.
-func (ruo *RoleUpdateOne) SetAccessApi(s string) *RoleUpdateOne {
-	ruo.mutation.SetAccessApi(s)
+// SetDescript sets the "descript" field.
+func (ruo *RoleUpdateOne) SetDescript(s string) *RoleUpdateOne {
+	ruo.mutation.SetDescript(s)
 	return ruo
 }
 
-// SetAccessMethod sets the "accessMethod" field.
+// SetStatus sets the "status" field.
+func (ruo *RoleUpdateOne) SetStatus(i int8) *RoleUpdateOne {
+	ruo.mutation.ResetStatus()
+	ruo.mutation.SetStatus(i)
+	return ruo
+}
+
+// SetNillableStatus sets the "status" field if the given value is not nil.
+func (ruo *RoleUpdateOne) SetNillableStatus(i *int8) *RoleUpdateOne {
+	if i != nil {
+		ruo.SetStatus(*i)
+	}
+	return ruo
+}
+
+// AddStatus adds i to the "status" field.
+func (ruo *RoleUpdateOne) AddStatus(i int8) *RoleUpdateOne {
+	ruo.mutation.AddStatus(i)
+	return ruo
+}
+
+// SetIsDeleted sets the "is_deleted" field.
+func (ruo *RoleUpdateOne) SetIsDeleted(i int8) *RoleUpdateOne {
+	ruo.mutation.ResetIsDeleted()
+	ruo.mutation.SetIsDeleted(i)
+	return ruo
+}
+
+// SetNillableIsDeleted sets the "is_deleted" field if the given value is not nil.
+func (ruo *RoleUpdateOne) SetNillableIsDeleted(i *int8) *RoleUpdateOne {
+	if i != nil {
+		ruo.SetIsDeleted(*i)
+	}
+	return ruo
+}
+
+// AddIsDeleted adds i to the "is_deleted" field.
+func (ruo *RoleUpdateOne) AddIsDeleted(i int8) *RoleUpdateOne {
+	ruo.mutation.AddIsDeleted(i)
+	return ruo
+}
+
+// SetAccessAPI sets the "access_api" field.
+func (ruo *RoleUpdateOne) SetAccessAPI(s string) *RoleUpdateOne {
+	ruo.mutation.SetAccessAPI(s)
+	return ruo
+}
+
+// SetAccessMethod sets the "access_method" field.
 func (ruo *RoleUpdateOne) SetAccessMethod(s string) *RoleUpdateOne {
 	ruo.mutation.SetAccessMethod(s)
+	return ruo
+}
+
+// SetCreatedAt sets the "created_at" field.
+func (ruo *RoleUpdateOne) SetCreatedAt(t time.Time) *RoleUpdateOne {
+	ruo.mutation.SetCreatedAt(t)
+	return ruo
+}
+
+// SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
+func (ruo *RoleUpdateOne) SetNillableCreatedAt(t *time.Time) *RoleUpdateOne {
+	if t != nil {
+		ruo.SetCreatedAt(*t)
+	}
+	return ruo
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (ruo *RoleUpdateOne) SetUpdatedAt(t time.Time) *RoleUpdateOne {
+	ruo.mutation.SetUpdatedAt(t)
 	return ruo
 }
 
@@ -325,6 +520,7 @@ func (ruo *RoleUpdateOne) Save(ctx context.Context) (*Role, error) {
 		err  error
 		node *Role
 	)
+	ruo.defaults()
 	if len(ruo.hooks) == 0 {
 		node, err = ruo.sqlSave(ctx)
 	} else {
@@ -373,6 +569,14 @@ func (ruo *RoleUpdateOne) ExecX(ctx context.Context) {
 	}
 }
 
+// defaults sets the default values of the builder before save.
+func (ruo *RoleUpdateOne) defaults() {
+	if _, ok := ruo.mutation.UpdatedAt(); !ok {
+		v := role.UpdateDefaultUpdatedAt()
+		ruo.mutation.SetUpdatedAt(v)
+	}
+}
+
 func (ruo *RoleUpdateOne) sqlSave(ctx context.Context) (_node *Role, err error) {
 	_spec := &sqlgraph.UpdateSpec{
 		Node: &sqlgraph.NodeSpec{
@@ -415,11 +619,46 @@ func (ruo *RoleUpdateOne) sqlSave(ctx context.Context) (_node *Role, err error) 
 			Column: role.FieldName,
 		})
 	}
-	if value, ok := ruo.mutation.AccessApi(); ok {
+	if value, ok := ruo.mutation.Descript(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
 			Value:  value,
-			Column: role.FieldAccessApi,
+			Column: role.FieldDescript,
+		})
+	}
+	if value, ok := ruo.mutation.Status(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeInt8,
+			Value:  value,
+			Column: role.FieldStatus,
+		})
+	}
+	if value, ok := ruo.mutation.AddedStatus(); ok {
+		_spec.Fields.Add = append(_spec.Fields.Add, &sqlgraph.FieldSpec{
+			Type:   field.TypeInt8,
+			Value:  value,
+			Column: role.FieldStatus,
+		})
+	}
+	if value, ok := ruo.mutation.IsDeleted(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeInt8,
+			Value:  value,
+			Column: role.FieldIsDeleted,
+		})
+	}
+	if value, ok := ruo.mutation.AddedIsDeleted(); ok {
+		_spec.Fields.Add = append(_spec.Fields.Add, &sqlgraph.FieldSpec{
+			Type:   field.TypeInt8,
+			Value:  value,
+			Column: role.FieldIsDeleted,
+		})
+	}
+	if value, ok := ruo.mutation.AccessAPI(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Value:  value,
+			Column: role.FieldAccessAPI,
 		})
 	}
 	if value, ok := ruo.mutation.AccessMethod(); ok {
@@ -427,6 +666,20 @@ func (ruo *RoleUpdateOne) sqlSave(ctx context.Context) (_node *Role, err error) 
 			Type:   field.TypeString,
 			Value:  value,
 			Column: role.FieldAccessMethod,
+		})
+	}
+	if value, ok := ruo.mutation.CreatedAt(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeTime,
+			Value:  value,
+			Column: role.FieldCreatedAt,
+		})
+	}
+	if value, ok := ruo.mutation.UpdatedAt(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeTime,
+			Value:  value,
+			Column: role.FieldUpdatedAt,
 		})
 	}
 	if ruo.mutation.UsersCleared() {

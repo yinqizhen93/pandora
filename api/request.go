@@ -146,3 +146,7 @@ func RequestInputs(c *gin.Context) (map[string]interface{}, error) {
 
 	return dataMap, nil
 }
+
+func CurrentUserId(c *gin.Context) int {
+	return c.GetInt("userId")
+}

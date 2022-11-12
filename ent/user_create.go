@@ -6,6 +6,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"pandora/ent/department"
 	"pandora/ent/role"
 	"pandora/ent/user"
 	"time"
@@ -39,13 +40,19 @@ func (uc *UserCreate) SetEmail(s string) *UserCreate {
 	return uc
 }
 
-// SetRefreshToken sets the "refreshToken" field.
+// SetPhoneNumber sets the "phone_number" field.
+func (uc *UserCreate) SetPhoneNumber(s string) *UserCreate {
+	uc.mutation.SetPhoneNumber(s)
+	return uc
+}
+
+// SetRefreshToken sets the "refresh_token" field.
 func (uc *UserCreate) SetRefreshToken(s string) *UserCreate {
 	uc.mutation.SetRefreshToken(s)
 	return uc
 }
 
-// SetNillableRefreshToken sets the "refreshToken" field if the given value is not nil.
+// SetNillableRefreshToken sets the "refresh_token" field if the given value is not nil.
 func (uc *UserCreate) SetNillableRefreshToken(s *string) *UserCreate {
 	if s != nil {
 		uc.SetRefreshToken(*s)
@@ -53,13 +60,41 @@ func (uc *UserCreate) SetNillableRefreshToken(s *string) *UserCreate {
 	return uc
 }
 
-// SetCreatedAt sets the "createdAt" field.
+// SetIsActive sets the "is_active" field.
+func (uc *UserCreate) SetIsActive(i int8) *UserCreate {
+	uc.mutation.SetIsActive(i)
+	return uc
+}
+
+// SetNillableIsActive sets the "is_active" field if the given value is not nil.
+func (uc *UserCreate) SetNillableIsActive(i *int8) *UserCreate {
+	if i != nil {
+		uc.SetIsActive(*i)
+	}
+	return uc
+}
+
+// SetLastLogin sets the "last_login" field.
+func (uc *UserCreate) SetLastLogin(t time.Time) *UserCreate {
+	uc.mutation.SetLastLogin(t)
+	return uc
+}
+
+// SetNillableLastLogin sets the "last_login" field if the given value is not nil.
+func (uc *UserCreate) SetNillableLastLogin(t *time.Time) *UserCreate {
+	if t != nil {
+		uc.SetLastLogin(*t)
+	}
+	return uc
+}
+
+// SetCreatedAt sets the "created_at" field.
 func (uc *UserCreate) SetCreatedAt(t time.Time) *UserCreate {
 	uc.mutation.SetCreatedAt(t)
 	return uc
 }
 
-// SetNillableCreatedAt sets the "createdAt" field if the given value is not nil.
+// SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
 func (uc *UserCreate) SetNillableCreatedAt(t *time.Time) *UserCreate {
 	if t != nil {
 		uc.SetCreatedAt(*t)
@@ -67,13 +102,13 @@ func (uc *UserCreate) SetNillableCreatedAt(t *time.Time) *UserCreate {
 	return uc
 }
 
-// SetUpdatedAt sets the "updatedAt" field.
+// SetUpdatedAt sets the "updated_at" field.
 func (uc *UserCreate) SetUpdatedAt(t time.Time) *UserCreate {
 	uc.mutation.SetUpdatedAt(t)
 	return uc
 }
 
-// SetNillableUpdatedAt sets the "updatedAt" field if the given value is not nil.
+// SetNillableUpdatedAt sets the "updated_at" field if the given value is not nil.
 func (uc *UserCreate) SetNillableUpdatedAt(t *time.Time) *UserCreate {
 	if t != nil {
 		uc.SetUpdatedAt(*t)
@@ -94,6 +129,17 @@ func (uc *UserCreate) AddRoles(r ...*Role) *UserCreate {
 		ids[i] = r[i].ID
 	}
 	return uc.AddRoleIDs(ids...)
+}
+
+// SetDepartmentID sets the "department" edge to the Department entity by ID.
+func (uc *UserCreate) SetDepartmentID(id int) *UserCreate {
+	uc.mutation.SetDepartmentID(id)
+	return uc
+}
+
+// SetDepartment sets the "department" edge to the Department entity.
+func (uc *UserCreate) SetDepartment(d *Department) *UserCreate {
+	return uc.SetDepartmentID(d.ID)
 }
 
 // Mutation returns the UserMutation object of the builder.
@@ -171,6 +217,10 @@ func (uc *UserCreate) defaults() {
 		v := user.DefaultRefreshToken
 		uc.mutation.SetRefreshToken(v)
 	}
+	if _, ok := uc.mutation.IsActive(); !ok {
+		v := user.DefaultIsActive
+		uc.mutation.SetIsActive(v)
+	}
 	if _, ok := uc.mutation.CreatedAt(); !ok {
 		v := user.DefaultCreatedAt()
 		uc.mutation.SetCreatedAt(v)
@@ -192,14 +242,26 @@ func (uc *UserCreate) check() error {
 	if _, ok := uc.mutation.Email(); !ok {
 		return &ValidationError{Name: "email", err: errors.New(`ent: missing required field "User.email"`)}
 	}
+	if _, ok := uc.mutation.PhoneNumber(); !ok {
+		return &ValidationError{Name: "phone_number", err: errors.New(`ent: missing required field "User.phone_number"`)}
+	}
 	if _, ok := uc.mutation.RefreshToken(); !ok {
-		return &ValidationError{Name: "refreshToken", err: errors.New(`ent: missing required field "User.refreshToken"`)}
+		return &ValidationError{Name: "refresh_token", err: errors.New(`ent: missing required field "User.refresh_token"`)}
+	}
+	if _, ok := uc.mutation.IsActive(); !ok {
+		return &ValidationError{Name: "is_active", err: errors.New(`ent: missing required field "User.is_active"`)}
 	}
 	if _, ok := uc.mutation.CreatedAt(); !ok {
-		return &ValidationError{Name: "createdAt", err: errors.New(`ent: missing required field "User.createdAt"`)}
+		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "User.created_at"`)}
 	}
 	if _, ok := uc.mutation.UpdatedAt(); !ok {
-		return &ValidationError{Name: "updatedAt", err: errors.New(`ent: missing required field "User.updatedAt"`)}
+		return &ValidationError{Name: "updated_at", err: errors.New(`ent: missing required field "User.updated_at"`)}
+	}
+	if len(uc.mutation.RolesIDs()) == 0 {
+		return &ValidationError{Name: "roles", err: errors.New(`ent: missing required edge "User.roles"`)}
+	}
+	if _, ok := uc.mutation.DepartmentID(); !ok {
+		return &ValidationError{Name: "department", err: errors.New(`ent: missing required edge "User.department"`)}
 	}
 	return nil
 }
@@ -252,6 +314,14 @@ func (uc *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 		})
 		_node.Email = value
 	}
+	if value, ok := uc.mutation.PhoneNumber(); ok {
+		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Value:  value,
+			Column: user.FieldPhoneNumber,
+		})
+		_node.PhoneNumber = value
+	}
 	if value, ok := uc.mutation.RefreshToken(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
@@ -259,6 +329,22 @@ func (uc *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 			Column: user.FieldRefreshToken,
 		})
 		_node.RefreshToken = value
+	}
+	if value, ok := uc.mutation.IsActive(); ok {
+		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
+			Type:   field.TypeInt8,
+			Value:  value,
+			Column: user.FieldIsActive,
+		})
+		_node.IsActive = value
+	}
+	if value, ok := uc.mutation.LastLogin(); ok {
+		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
+			Type:   field.TypeTime,
+			Value:  value,
+			Column: user.FieldLastLogin,
+		})
+		_node.LastLogin = &value
 	}
 	if value, ok := uc.mutation.CreatedAt(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
@@ -293,6 +379,26 @@ func (uc *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := uc.mutation.DepartmentIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   user.DepartmentTable,
+			Columns: []string{user.DepartmentColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: department.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_node.user_department = &nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec

@@ -9,7 +9,6 @@ import (
 	"pandora/api/handler"
 	_ "pandora/docs" // 以上导入for Swagger
 	mdw "pandora/middleware"
-	"pandora/service"
 	ws "pandora/service/websocket"
 )
 
@@ -57,6 +56,7 @@ func (ar *AppRouter) InitRouter() {
 	ar.addSSERouter()
 	ar.addWSRouter()
 	ar.addMaterialRouter()
+	ar.addDepartmentRouter()
 }
 
 // see api docs on http://localhost:5001/swagger/index.html
@@ -115,9 +115,9 @@ func (ar *AppRouter) addTaskRouter() {
 }
 
 func (ar *AppRouter) addSSERouter() {
-	r := ar.router.Group("/sse", ar.mdw.JWTAuth(), ar.mdw.SSEHeaderMiddleware()) // JWTAuth授权
+	r := ar.router.Group("/sse", ar.mdw.JWTAuth(), ar.mdw.SSE()) // JWTAuth授权
 	{
-		r.GET("/task", service.Stream.SSEHandler)
+		r.GET("/task", ar.handler.StartTaskSSE)
 	}
 }
 
@@ -125,5 +125,12 @@ func (ar *AppRouter) addWSRouter() {
 	r := ar.router.Group("/ws", ar.mdw.JWTAuth(), ws.WebSocketHandler()) // JWTAuth授权
 	{
 		r.GET("/task", ar.handler.StartTaskWS)
+	}
+}
+
+func (ar *AppRouter) addDepartmentRouter() {
+	r := ar.router.Group("/departments", ar.mdw.JWTAuthMiddleware())
+	{
+		r.POST("/", ar.handler.CreateDepartment)
 	}
 }

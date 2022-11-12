@@ -4,17 +4,20 @@ import (
 	"github.com/google/wire"
 	"pandora/ent"
 	"pandora/service/logger"
+	"pandora/service/sse"
 )
 
 type Handler struct {
 	logger logger.Logger
 	db     *ent.Client
+	sse    *sse.SSEvent
 }
 
-func NewHandler(logger logger.Logger, db *ent.Client) *Handler {
+func NewHandler(logger logger.Logger, db *ent.Client, s *sse.SSEvent) *Handler {
 	return &Handler{
 		logger: logger,
 		db:     db,
+		sse:    s,
 	}
 }
 

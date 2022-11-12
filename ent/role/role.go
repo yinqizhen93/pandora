@@ -2,6 +2,10 @@
 
 package role
 
+import (
+	"time"
+)
+
 const (
 	// Label holds the string label denoting the role type in the database.
 	Label = "role"
@@ -9,10 +13,20 @@ const (
 	FieldID = "id"
 	// FieldName holds the string denoting the name field in the database.
 	FieldName = "name"
-	// FieldAccessApi holds the string denoting the accessapi field in the database.
-	FieldAccessApi = "access_api"
-	// FieldAccessMethod holds the string denoting the accessmethod field in the database.
+	// FieldDescript holds the string denoting the descript field in the database.
+	FieldDescript = "descript"
+	// FieldStatus holds the string denoting the status field in the database.
+	FieldStatus = "status"
+	// FieldIsDeleted holds the string denoting the is_deleted field in the database.
+	FieldIsDeleted = "is_deleted"
+	// FieldAccessAPI holds the string denoting the access_api field in the database.
+	FieldAccessAPI = "access_api"
+	// FieldAccessMethod holds the string denoting the access_method field in the database.
 	FieldAccessMethod = "access_method"
+	// FieldCreatedAt holds the string denoting the created_at field in the database.
+	FieldCreatedAt = "created_at"
+	// FieldUpdatedAt holds the string denoting the updated_at field in the database.
+	FieldUpdatedAt = "updated_at"
 	// EdgeUsers holds the string denoting the users edge name in mutations.
 	EdgeUsers = "users"
 	// Table holds the table name of the role in the database.
@@ -28,8 +42,13 @@ const (
 var Columns = []string{
 	FieldID,
 	FieldName,
-	FieldAccessApi,
+	FieldDescript,
+	FieldStatus,
+	FieldIsDeleted,
+	FieldAccessAPI,
 	FieldAccessMethod,
+	FieldCreatedAt,
+	FieldUpdatedAt,
 }
 
 var (
@@ -47,3 +66,16 @@ func ValidColumn(column string) bool {
 	}
 	return false
 }
+
+var (
+	// DefaultStatus holds the default value on creation for the "status" field.
+	DefaultStatus int8
+	// DefaultIsDeleted holds the default value on creation for the "is_deleted" field.
+	DefaultIsDeleted int8
+	// DefaultCreatedAt holds the default value on creation for the "created_at" field.
+	DefaultCreatedAt func() time.Time
+	// DefaultUpdatedAt holds the default value on creation for the "updated_at" field.
+	DefaultUpdatedAt func() time.Time
+	// UpdateDefaultUpdatedAt holds the default value on update for the "updated_at" field.
+	UpdateDefaultUpdatedAt func() time.Time
+)

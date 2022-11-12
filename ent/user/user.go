@@ -17,14 +17,22 @@ const (
 	FieldPassword = "password"
 	// FieldEmail holds the string denoting the email field in the database.
 	FieldEmail = "email"
-	// FieldRefreshToken holds the string denoting the refreshtoken field in the database.
+	// FieldPhoneNumber holds the string denoting the phone_number field in the database.
+	FieldPhoneNumber = "phone_number"
+	// FieldRefreshToken holds the string denoting the refresh_token field in the database.
 	FieldRefreshToken = "refresh_token"
-	// FieldCreatedAt holds the string denoting the createdat field in the database.
+	// FieldIsActive holds the string denoting the is_active field in the database.
+	FieldIsActive = "is_active"
+	// FieldLastLogin holds the string denoting the last_login field in the database.
+	FieldLastLogin = "last_login"
+	// FieldCreatedAt holds the string denoting the created_at field in the database.
 	FieldCreatedAt = "created_at"
-	// FieldUpdatedAt holds the string denoting the updatedat field in the database.
+	// FieldUpdatedAt holds the string denoting the updated_at field in the database.
 	FieldUpdatedAt = "updated_at"
 	// EdgeRoles holds the string denoting the roles edge name in mutations.
 	EdgeRoles = "roles"
+	// EdgeDepartment holds the string denoting the department edge name in mutations.
+	EdgeDepartment = "department"
 	// Table holds the table name of the user in the database.
 	Table = "users"
 	// RolesTable is the table that holds the roles relation/edge. The primary key declared below.
@@ -32,6 +40,13 @@ const (
 	// RolesInverseTable is the table name for the Role entity.
 	// It exists in this package in order to avoid circular dependency with the "role" package.
 	RolesInverseTable = "roles"
+	// DepartmentTable is the table that holds the department relation/edge.
+	DepartmentTable = "users"
+	// DepartmentInverseTable is the table name for the Department entity.
+	// It exists in this package in order to avoid circular dependency with the "department" package.
+	DepartmentInverseTable = "departments"
+	// DepartmentColumn is the table column denoting the department relation/edge.
+	DepartmentColumn = "user_department"
 )
 
 // Columns holds all SQL columns for user fields.
@@ -40,9 +55,18 @@ var Columns = []string{
 	FieldUsername,
 	FieldPassword,
 	FieldEmail,
+	FieldPhoneNumber,
 	FieldRefreshToken,
+	FieldIsActive,
+	FieldLastLogin,
 	FieldCreatedAt,
 	FieldUpdatedAt,
+}
+
+// ForeignKeys holds the SQL foreign-keys that are owned by the "users"
+// table and are not defined as standalone fields in the schema.
+var ForeignKeys = []string{
+	"user_department",
 }
 
 var (
@@ -58,16 +82,23 @@ func ValidColumn(column string) bool {
 			return true
 		}
 	}
+	for i := range ForeignKeys {
+		if column == ForeignKeys[i] {
+			return true
+		}
+	}
 	return false
 }
 
 var (
-	// DefaultRefreshToken holds the default value on creation for the "refreshToken" field.
+	// DefaultRefreshToken holds the default value on creation for the "refresh_token" field.
 	DefaultRefreshToken string
-	// DefaultCreatedAt holds the default value on creation for the "createdAt" field.
+	// DefaultIsActive holds the default value on creation for the "is_active" field.
+	DefaultIsActive int8
+	// DefaultCreatedAt holds the default value on creation for the "created_at" field.
 	DefaultCreatedAt func() time.Time
-	// DefaultUpdatedAt holds the default value on creation for the "updatedAt" field.
+	// DefaultUpdatedAt holds the default value on creation for the "updated_at" field.
 	DefaultUpdatedAt func() time.Time
-	// UpdateDefaultUpdatedAt holds the default value on update for the "updatedAt" field.
+	// UpdateDefaultUpdatedAt holds the default value on update for the "updated_at" field.
 	UpdateDefaultUpdatedAt func() time.Time
 )

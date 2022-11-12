@@ -4,6 +4,8 @@ package ent
 
 import (
 	"pandora/ent/casbinrule"
+	"pandora/ent/department"
+	"pandora/ent/role"
 	"pandora/ent/schema"
 	"pandora/ent/task"
 	"pandora/ent/user"
@@ -44,6 +46,42 @@ func init() {
 	casbinruleDescV5 := casbinruleFields[6].Descriptor()
 	// casbinrule.DefaultV5 holds the default value on creation for the V5 field.
 	casbinrule.DefaultV5 = casbinruleDescV5.Default.(string)
+	departmentFields := schema.Department{}.Fields()
+	_ = departmentFields
+	// departmentDescIsDeleted is the schema descriptor for is_deleted field.
+	departmentDescIsDeleted := departmentFields[3].Descriptor()
+	// department.DefaultIsDeleted holds the default value on creation for the is_deleted field.
+	department.DefaultIsDeleted = departmentDescIsDeleted.Default.(int8)
+	// departmentDescCreatedAt is the schema descriptor for created_at field.
+	departmentDescCreatedAt := departmentFields[6].Descriptor()
+	// department.DefaultCreatedAt holds the default value on creation for the created_at field.
+	department.DefaultCreatedAt = departmentDescCreatedAt.Default.(func() time.Time)
+	// departmentDescUpdatedAt is the schema descriptor for updated_at field.
+	departmentDescUpdatedAt := departmentFields[7].Descriptor()
+	// department.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	department.DefaultUpdatedAt = departmentDescUpdatedAt.Default.(func() time.Time)
+	// department.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	department.UpdateDefaultUpdatedAt = departmentDescUpdatedAt.UpdateDefault.(func() time.Time)
+	roleFields := schema.Role{}.Fields()
+	_ = roleFields
+	// roleDescStatus is the schema descriptor for status field.
+	roleDescStatus := roleFields[2].Descriptor()
+	// role.DefaultStatus holds the default value on creation for the status field.
+	role.DefaultStatus = roleDescStatus.Default.(int8)
+	// roleDescIsDeleted is the schema descriptor for is_deleted field.
+	roleDescIsDeleted := roleFields[3].Descriptor()
+	// role.DefaultIsDeleted holds the default value on creation for the is_deleted field.
+	role.DefaultIsDeleted = roleDescIsDeleted.Default.(int8)
+	// roleDescCreatedAt is the schema descriptor for created_at field.
+	roleDescCreatedAt := roleFields[6].Descriptor()
+	// role.DefaultCreatedAt holds the default value on creation for the created_at field.
+	role.DefaultCreatedAt = roleDescCreatedAt.Default.(func() time.Time)
+	// roleDescUpdatedAt is the schema descriptor for updated_at field.
+	roleDescUpdatedAt := roleFields[7].Descriptor()
+	// role.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	role.DefaultUpdatedAt = roleDescUpdatedAt.Default.(func() time.Time)
+	// role.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	role.UpdateDefaultUpdatedAt = roleDescUpdatedAt.UpdateDefault.(func() time.Time)
 	taskFields := schema.Task{}.Fields()
 	_ = taskFields
 	// taskDescCreatedAt is the schema descriptor for createdAt field.
@@ -52,18 +90,22 @@ func init() {
 	task.DefaultCreatedAt = taskDescCreatedAt.Default.(func() time.Time)
 	userFields := schema.User{}.Fields()
 	_ = userFields
-	// userDescRefreshToken is the schema descriptor for refreshToken field.
-	userDescRefreshToken := userFields[3].Descriptor()
-	// user.DefaultRefreshToken holds the default value on creation for the refreshToken field.
+	// userDescRefreshToken is the schema descriptor for refresh_token field.
+	userDescRefreshToken := userFields[4].Descriptor()
+	// user.DefaultRefreshToken holds the default value on creation for the refresh_token field.
 	user.DefaultRefreshToken = userDescRefreshToken.Default.(string)
-	// userDescCreatedAt is the schema descriptor for createdAt field.
-	userDescCreatedAt := userFields[4].Descriptor()
-	// user.DefaultCreatedAt holds the default value on creation for the createdAt field.
+	// userDescIsActive is the schema descriptor for is_active field.
+	userDescIsActive := userFields[5].Descriptor()
+	// user.DefaultIsActive holds the default value on creation for the is_active field.
+	user.DefaultIsActive = userDescIsActive.Default.(int8)
+	// userDescCreatedAt is the schema descriptor for created_at field.
+	userDescCreatedAt := userFields[7].Descriptor()
+	// user.DefaultCreatedAt holds the default value on creation for the created_at field.
 	user.DefaultCreatedAt = userDescCreatedAt.Default.(func() time.Time)
-	// userDescUpdatedAt is the schema descriptor for updatedAt field.
-	userDescUpdatedAt := userFields[5].Descriptor()
-	// user.DefaultUpdatedAt holds the default value on creation for the updatedAt field.
+	// userDescUpdatedAt is the schema descriptor for updated_at field.
+	userDescUpdatedAt := userFields[8].Descriptor()
+	// user.DefaultUpdatedAt holds the default value on creation for the updated_at field.
 	user.DefaultUpdatedAt = userDescUpdatedAt.Default.(func() time.Time)
-	// user.UpdateDefaultUpdatedAt holds the default value on update for the updatedAt field.
+	// user.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
 	user.UpdateDefaultUpdatedAt = userDescUpdatedAt.UpdateDefault.(func() time.Time)
 }

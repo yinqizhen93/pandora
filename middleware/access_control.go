@@ -12,6 +12,7 @@ import (
 )
 
 func (mdw *Middleware) AccessControl() gin.HandlerFunc {
+	// lazy load
 	if mdw.accessCtrl == nil {
 		mdw.accessCtrl = access.NewRBAC(mdw.db)
 	}

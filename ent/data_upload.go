@@ -76,12 +76,21 @@ func (c *UserClient) UploadData(ctx context.Context, data [][]string) error {
 		create.SetEmail(v.(string))
 
 		v, err = convert(row[3], "string")
+		create.SetPhoneNumber(v.(string))
+
+		v, err = convert(row[4], "string")
 		create.SetRefreshToken(v.(string))
 
-		v, err = convert(row[4], "time.Time")
+		v, err = convert(row[5], "int8")
+		create.SetIsActive(v.(int8))
+
+		v, err = convert(row[6], "time.Time")
+		create.SetLastLogin(v.(time.Time))
+
+		v, err = convert(row[7], "time.Time")
 		create.SetCreatedAt(v.(time.Time))
 
-		v, err = convert(row[5], "time.Time")
+		v, err = convert(row[8], "time.Time")
 		create.SetUpdatedAt(v.(time.Time))
 
 		bulk[i] = create

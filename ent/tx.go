@@ -14,6 +14,8 @@ type Tx struct {
 	config
 	// CasbinRule is the client for interacting with the CasbinRule builders.
 	CasbinRule *CasbinRuleClient
+	// Department is the client for interacting with the Department builders.
+	Department *DepartmentClient
 	// Material is the client for interacting with the Material builders.
 	Material *MaterialClient
 	// Role is the client for interacting with the Role builders.
@@ -160,6 +162,7 @@ func (tx *Tx) Client() *Client {
 
 func (tx *Tx) init() {
 	tx.CasbinRule = NewCasbinRuleClient(tx.config)
+	tx.Department = NewDepartmentClient(tx.config)
 	tx.Material = NewMaterialClient(tx.config)
 	tx.Role = NewRoleClient(tx.config)
 	tx.Stock = NewStockClient(tx.config)

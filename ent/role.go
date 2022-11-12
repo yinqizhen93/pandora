@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"pandora/ent/role"
 	"strings"
+	"time"
 
 	"entgo.io/ent/dialect/sql"
 )
@@ -17,10 +18,23 @@ type Role struct {
 	ID int `json:"id,omitempty"`
 	// Name holds the value of the "name" field.
 	Name string `json:"name,omitempty"`
-	// AccessApi holds the value of the "accessApi" field.
-	AccessApi string `json:"accessApi,omitempty"`
-	// AccessMethod holds the value of the "accessMethod" field.
-	AccessMethod string `json:"accessMethod,omitempty"`
+	// Descript holds the value of the "descript" field.
+	// 角色的详细说明
+	Descript string `json:"descript,omitempty"`
+	// Status holds the value of the "status" field.
+	// 1-启用；0-禁用
+	Status int8 `json:"status,omitempty"`
+	// IsDeleted holds the value of the "is_deleted" field.
+	// 1-已删除；0-未删除
+	IsDeleted int8 `json:"is_deleted,omitempty"`
+	// AccessAPI holds the value of the "access_api" field.
+	AccessAPI string `json:"access_api,omitempty"`
+	// AccessMethod holds the value of the "access_method" field.
+	AccessMethod string `json:"access_method,omitempty"`
+	// CreatedAt holds the value of the "created_at" field.
+	CreatedAt time.Time `json:"created_at,omitempty"`
+	// UpdatedAt holds the value of the "updated_at" field.
+	UpdatedAt time.Time `json:"updated_at,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the RoleQuery when eager-loading is set.
 	Edges RoleEdges `json:"edges"`
@@ -49,10 +63,12 @@ func (*Role) scanValues(columns []string) ([]interface{}, error) {
 	values := make([]interface{}, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case role.FieldID:
+		case role.FieldID, role.FieldStatus, role.FieldIsDeleted:
 			values[i] = new(sql.NullInt64)
-		case role.FieldName, role.FieldAccessApi, role.FieldAccessMethod:
+		case role.FieldName, role.FieldDescript, role.FieldAccessAPI, role.FieldAccessMethod:
 			values[i] = new(sql.NullString)
+		case role.FieldCreatedAt, role.FieldUpdatedAt:
+			values[i] = new(sql.NullTime)
 		default:
 			return nil, fmt.Errorf("unexpected column %q for type Role", columns[i])
 		}
@@ -80,17 +96,47 @@ func (r *Role) assignValues(columns []string, values []interface{}) error {
 			} else if value.Valid {
 				r.Name = value.String
 			}
-		case role.FieldAccessApi:
+		case role.FieldDescript:
 			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field accessApi", values[i])
+				return fmt.Errorf("unexpected type %T for field descript", values[i])
 			} else if value.Valid {
-				r.AccessApi = value.String
+				r.Descript = value.String
+			}
+		case role.FieldStatus:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field status", values[i])
+			} else if value.Valid {
+				r.Status = int8(value.Int64)
+			}
+		case role.FieldIsDeleted:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field is_deleted", values[i])
+			} else if value.Valid {
+				r.IsDeleted = int8(value.Int64)
+			}
+		case role.FieldAccessAPI:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field access_api", values[i])
+			} else if value.Valid {
+				r.AccessAPI = value.String
 			}
 		case role.FieldAccessMethod:
 			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field accessMethod", values[i])
+				return fmt.Errorf("unexpected type %T for field access_method", values[i])
 			} else if value.Valid {
 				r.AccessMethod = value.String
+			}
+		case role.FieldCreatedAt:
+			if value, ok := values[i].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field created_at", values[i])
+			} else if value.Valid {
+				r.CreatedAt = value.Time
+			}
+		case role.FieldUpdatedAt:
+			if value, ok := values[i].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field updated_at", values[i])
+			} else if value.Valid {
+				r.UpdatedAt = value.Time
 			}
 		}
 	}
@@ -127,10 +173,20 @@ func (r *Role) String() string {
 	builder.WriteString(fmt.Sprintf("id=%v", r.ID))
 	builder.WriteString(", name=")
 	builder.WriteString(r.Name)
-	builder.WriteString(", accessApi=")
-	builder.WriteString(r.AccessApi)
-	builder.WriteString(", accessMethod=")
+	builder.WriteString(", descript=")
+	builder.WriteString(r.Descript)
+	builder.WriteString(", status=")
+	builder.WriteString(fmt.Sprintf("%v", r.Status))
+	builder.WriteString(", is_deleted=")
+	builder.WriteString(fmt.Sprintf("%v", r.IsDeleted))
+	builder.WriteString(", access_api=")
+	builder.WriteString(r.AccessAPI)
+	builder.WriteString(", access_method=")
 	builder.WriteString(r.AccessMethod)
+	builder.WriteString(", created_at=")
+	builder.WriteString(r.CreatedAt.Format(time.ANSIC))
+	builder.WriteString(", updated_at=")
+	builder.WriteString(r.UpdatedAt.Format(time.ANSIC))
 	builder.WriteByte(')')
 	return builder.String()
 }

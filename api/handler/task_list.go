@@ -7,7 +7,7 @@ import (
 	"net/http"
 	"pandora/api"
 	"pandora/ent/task"
-	"pandora/service"
+	"pandora/service/sse"
 	ws "pandora/service/websocket"
 	"runtime/debug"
 	"time"
@@ -65,19 +65,18 @@ func (h *Handler) StartTaskSSE(c *gin.Context) {
 			time.Sleep(time.Second * 1)
 			now := time.Now().Format("2006-01-02 15:04:05")
 			currentTime := fmt.Sprintf("The Current Time Is %v", now)
-
 			// Send current time to clients message channel
-			service.Stream.Message <- service.Message{Pipeline: "message2", Data: currentTime}
+			h.sse.Message <- sse.Message{Pipeline: "message", Data: currentTime}
 		}
 	}()
 
-	cliStream, ok := c.Get(service.SSEClient)
+	cliStream, ok := c.Get(sse.SSEClient)
 	if !ok {
 		panic("no sseClient find")
 	}
 	c.Stream(func(w io.Writer) bool {
 		// Stream message to client from message channel
-		if msg, ok := <-cliStream.(service.ClientChan); ok {
+		if msg, ok := <-cliStream.(chan sse.Message); ok {
 			fmt.Println(msg)
 			c.SSEvent(msg.Pipeline, msg.Data)
 			return true

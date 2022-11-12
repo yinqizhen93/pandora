@@ -34,7 +34,7 @@ func (h Handler) GetCurrentUser(c *gin.Context) {
 	users, err := h.db.User.Query().Where(user.IDEQ(curUserId.(int))).Select().All(ctx)
 	if err != nil {
 		h.logger.Error(fmt.Sprintf("获取用户失败：%s; \n %s", err, debug.Stack()))
-		c.JSON(200, api.FailResponse(2006, "获取用户失败"))
+		c.JSON(200, api.FailResponse(2006, "获取用户失败", err))
 	}
 	//db.DB.Where("id = ?", curUserId).First(&users)
 	fmt.Println(users)
@@ -46,9 +46,11 @@ func (h Handler) GetCurrentUser(c *gin.Context) {
 }
 
 type UserRequest struct {
-	Username string `json:"username" binding:"required"`
-	Password string `json:"password" binding:"required"`
-	Email    string `json:"email" binding:"required,email"`
+	Username    string `json:"username" binding:"required"`
+	Password    string `json:"password" binding:"required"`
+	Email       string `json:"email" binding:"required,email"`
+	PhoneNumber string `json:"phone_number" binding:"required"`
+	Roles       []int  `json:"roles" binding:"required"`
 }
 
 // CreateUser 创建用户接口
@@ -63,7 +65,8 @@ func (h Handler) CreateUser(c *gin.Context) {
 	var ur UserRequest
 	if err := c.ShouldBind(&ur); err != nil {
 		h.logger.Error(fmt.Sprintf("参数错误\"：%s; \n %s", err, debug.Stack()))
-		c.JSON(200, api.FailResponse(1001, "参数错误"))
+		c.JSON(200, api.FailResponse(1001, "参数错误", err))
+		return
 	}
 
 	//if err := service.Valid.Struct(ur); err != nil {
@@ -76,6 +79,8 @@ func (h Handler) CreateUser(c *gin.Context) {
 		SetUsername(ur.Username).
 		SetPassword(ur.Password).
 		SetEmail(ur.Email).
+		SetPhoneNumber(ur.PhoneNumber).
+		AddRoleIDs(ur.Roles...).
 		Save(ctx)
 	if err != nil {
 		h.logger.Error(fmt.Sprintf("创建用户失败:%s; %s", err, string(debug.Stack())))
@@ -83,7 +88,7 @@ func (h Handler) CreateUser(c *gin.Context) {
 		if sqlgraph.IsUniqueConstraintError(err) {
 			errMsg = "存在重复"
 		}
-		c.JSON(200, api.FailResponse(1002, errMsg))
+		c.JSON(200, api.FailResponse(1002, errMsg, err))
 		return
 	}
 	c.JSON(200, gin.H{

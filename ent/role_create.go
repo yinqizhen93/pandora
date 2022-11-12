@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"pandora/ent/role"
 	"pandora/ent/user"
+	"time"
 
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
@@ -26,15 +27,77 @@ func (rc *RoleCreate) SetName(s string) *RoleCreate {
 	return rc
 }
 
-// SetAccessApi sets the "accessApi" field.
-func (rc *RoleCreate) SetAccessApi(s string) *RoleCreate {
-	rc.mutation.SetAccessApi(s)
+// SetDescript sets the "descript" field.
+func (rc *RoleCreate) SetDescript(s string) *RoleCreate {
+	rc.mutation.SetDescript(s)
 	return rc
 }
 
-// SetAccessMethod sets the "accessMethod" field.
+// SetStatus sets the "status" field.
+func (rc *RoleCreate) SetStatus(i int8) *RoleCreate {
+	rc.mutation.SetStatus(i)
+	return rc
+}
+
+// SetNillableStatus sets the "status" field if the given value is not nil.
+func (rc *RoleCreate) SetNillableStatus(i *int8) *RoleCreate {
+	if i != nil {
+		rc.SetStatus(*i)
+	}
+	return rc
+}
+
+// SetIsDeleted sets the "is_deleted" field.
+func (rc *RoleCreate) SetIsDeleted(i int8) *RoleCreate {
+	rc.mutation.SetIsDeleted(i)
+	return rc
+}
+
+// SetNillableIsDeleted sets the "is_deleted" field if the given value is not nil.
+func (rc *RoleCreate) SetNillableIsDeleted(i *int8) *RoleCreate {
+	if i != nil {
+		rc.SetIsDeleted(*i)
+	}
+	return rc
+}
+
+// SetAccessAPI sets the "access_api" field.
+func (rc *RoleCreate) SetAccessAPI(s string) *RoleCreate {
+	rc.mutation.SetAccessAPI(s)
+	return rc
+}
+
+// SetAccessMethod sets the "access_method" field.
 func (rc *RoleCreate) SetAccessMethod(s string) *RoleCreate {
 	rc.mutation.SetAccessMethod(s)
+	return rc
+}
+
+// SetCreatedAt sets the "created_at" field.
+func (rc *RoleCreate) SetCreatedAt(t time.Time) *RoleCreate {
+	rc.mutation.SetCreatedAt(t)
+	return rc
+}
+
+// SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
+func (rc *RoleCreate) SetNillableCreatedAt(t *time.Time) *RoleCreate {
+	if t != nil {
+		rc.SetCreatedAt(*t)
+	}
+	return rc
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (rc *RoleCreate) SetUpdatedAt(t time.Time) *RoleCreate {
+	rc.mutation.SetUpdatedAt(t)
+	return rc
+}
+
+// SetNillableUpdatedAt sets the "updated_at" field if the given value is not nil.
+func (rc *RoleCreate) SetNillableUpdatedAt(t *time.Time) *RoleCreate {
+	if t != nil {
+		rc.SetUpdatedAt(*t)
+	}
 	return rc
 }
 
@@ -64,6 +127,7 @@ func (rc *RoleCreate) Save(ctx context.Context) (*Role, error) {
 		err  error
 		node *Role
 	)
+	rc.defaults()
 	if len(rc.hooks) == 0 {
 		if err = rc.check(); err != nil {
 			return nil, err
@@ -121,16 +185,51 @@ func (rc *RoleCreate) ExecX(ctx context.Context) {
 	}
 }
 
+// defaults sets the default values of the builder before save.
+func (rc *RoleCreate) defaults() {
+	if _, ok := rc.mutation.Status(); !ok {
+		v := role.DefaultStatus
+		rc.mutation.SetStatus(v)
+	}
+	if _, ok := rc.mutation.IsDeleted(); !ok {
+		v := role.DefaultIsDeleted
+		rc.mutation.SetIsDeleted(v)
+	}
+	if _, ok := rc.mutation.CreatedAt(); !ok {
+		v := role.DefaultCreatedAt()
+		rc.mutation.SetCreatedAt(v)
+	}
+	if _, ok := rc.mutation.UpdatedAt(); !ok {
+		v := role.DefaultUpdatedAt()
+		rc.mutation.SetUpdatedAt(v)
+	}
+}
+
 // check runs all checks and user-defined validators on the builder.
 func (rc *RoleCreate) check() error {
 	if _, ok := rc.mutation.Name(); !ok {
 		return &ValidationError{Name: "name", err: errors.New(`ent: missing required field "Role.name"`)}
 	}
-	if _, ok := rc.mutation.AccessApi(); !ok {
-		return &ValidationError{Name: "accessApi", err: errors.New(`ent: missing required field "Role.accessApi"`)}
+	if _, ok := rc.mutation.Descript(); !ok {
+		return &ValidationError{Name: "descript", err: errors.New(`ent: missing required field "Role.descript"`)}
+	}
+	if _, ok := rc.mutation.Status(); !ok {
+		return &ValidationError{Name: "status", err: errors.New(`ent: missing required field "Role.status"`)}
+	}
+	if _, ok := rc.mutation.IsDeleted(); !ok {
+		return &ValidationError{Name: "is_deleted", err: errors.New(`ent: missing required field "Role.is_deleted"`)}
+	}
+	if _, ok := rc.mutation.AccessAPI(); !ok {
+		return &ValidationError{Name: "access_api", err: errors.New(`ent: missing required field "Role.access_api"`)}
 	}
 	if _, ok := rc.mutation.AccessMethod(); !ok {
-		return &ValidationError{Name: "accessMethod", err: errors.New(`ent: missing required field "Role.accessMethod"`)}
+		return &ValidationError{Name: "access_method", err: errors.New(`ent: missing required field "Role.access_method"`)}
+	}
+	if _, ok := rc.mutation.CreatedAt(); !ok {
+		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "Role.created_at"`)}
+	}
+	if _, ok := rc.mutation.UpdatedAt(); !ok {
+		return &ValidationError{Name: "updated_at", err: errors.New(`ent: missing required field "Role.updated_at"`)}
 	}
 	return nil
 }
@@ -167,13 +266,37 @@ func (rc *RoleCreate) createSpec() (*Role, *sqlgraph.CreateSpec) {
 		})
 		_node.Name = value
 	}
-	if value, ok := rc.mutation.AccessApi(); ok {
+	if value, ok := rc.mutation.Descript(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
 			Value:  value,
-			Column: role.FieldAccessApi,
+			Column: role.FieldDescript,
 		})
-		_node.AccessApi = value
+		_node.Descript = value
+	}
+	if value, ok := rc.mutation.Status(); ok {
+		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
+			Type:   field.TypeInt8,
+			Value:  value,
+			Column: role.FieldStatus,
+		})
+		_node.Status = value
+	}
+	if value, ok := rc.mutation.IsDeleted(); ok {
+		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
+			Type:   field.TypeInt8,
+			Value:  value,
+			Column: role.FieldIsDeleted,
+		})
+		_node.IsDeleted = value
+	}
+	if value, ok := rc.mutation.AccessAPI(); ok {
+		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Value:  value,
+			Column: role.FieldAccessAPI,
+		})
+		_node.AccessAPI = value
 	}
 	if value, ok := rc.mutation.AccessMethod(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
@@ -182,6 +305,22 @@ func (rc *RoleCreate) createSpec() (*Role, *sqlgraph.CreateSpec) {
 			Column: role.FieldAccessMethod,
 		})
 		_node.AccessMethod = value
+	}
+	if value, ok := rc.mutation.CreatedAt(); ok {
+		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
+			Type:   field.TypeTime,
+			Value:  value,
+			Column: role.FieldCreatedAt,
+		})
+		_node.CreatedAt = value
+	}
+	if value, ok := rc.mutation.UpdatedAt(); ok {
+		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
+			Type:   field.TypeTime,
+			Value:  value,
+			Column: role.FieldUpdatedAt,
+		})
+		_node.UpdatedAt = value
 	}
 	if nodes := rc.mutation.UsersIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
@@ -219,6 +358,7 @@ func (rcb *RoleCreateBulk) Save(ctx context.Context) ([]*Role, error) {
 	for i := range rcb.builders {
 		func(i int, root context.Context) {
 			builder := rcb.builders[i]
+			builder.defaults()
 			var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
 				mutation, ok := m.(*RoleMutation)
 				if !ok {

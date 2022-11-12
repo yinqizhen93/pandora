@@ -25,6 +25,33 @@ var (
 		Columns:    CasbinRulesColumns,
 		PrimaryKey: []*schema.Column{CasbinRulesColumns[0]},
 	}
+	// DepartmentsColumns holds the columns for the "departments" table.
+	DepartmentsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "code", Type: field.TypeString, Unique: true},
+		{Name: "name", Type: field.TypeString},
+		{Name: "parent_id", Type: field.TypeInt},
+		{Name: "is_deleted", Type: field.TypeInt8, Default: 0},
+		{Name: "created_by", Type: field.TypeInt},
+		{Name: "updated_by", Type: field.TypeInt},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "updated_at", Type: field.TypeTime},
+		{Name: "department_children1", Type: field.TypeInt, Nullable: true},
+	}
+	// DepartmentsTable holds the schema information for the "departments" table.
+	DepartmentsTable = &schema.Table{
+		Name:       "departments",
+		Columns:    DepartmentsColumns,
+		PrimaryKey: []*schema.Column{DepartmentsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "departments_departments_children1",
+				Columns:    []*schema.Column{DepartmentsColumns[9]},
+				RefColumns: []*schema.Column{DepartmentsColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+		},
+	}
 	// MaterialsColumns holds the columns for the "materials" table.
 	MaterialsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
@@ -44,8 +71,13 @@ var (
 	RolesColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
 		{Name: "name", Type: field.TypeString, Unique: true},
+		{Name: "descript", Type: field.TypeString, Size: 2147483647},
+		{Name: "status", Type: field.TypeInt8, Default: 1},
+		{Name: "is_deleted", Type: field.TypeInt8, Default: 0},
 		{Name: "access_api", Type: field.TypeString},
 		{Name: "access_method", Type: field.TypeString, SchemaType: map[string]string{"mysql": "char(6)"}},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "updated_at", Type: field.TypeTime},
 	}
 	// RolesTable holds the schema information for the "roles" table.
 	RolesTable = &schema.Table{
@@ -99,15 +131,27 @@ var (
 		{Name: "username", Type: field.TypeString, Unique: true},
 		{Name: "password", Type: field.TypeString},
 		{Name: "email", Type: field.TypeString, Unique: true},
+		{Name: "phone_number", Type: field.TypeString, Unique: true},
 		{Name: "refresh_token", Type: field.TypeString, Default: ""},
+		{Name: "is_active", Type: field.TypeInt8, Default: 1},
+		{Name: "last_login", Type: field.TypeTime, Nullable: true},
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "updated_at", Type: field.TypeTime},
+		{Name: "user_department", Type: field.TypeInt},
 	}
 	// UsersTable holds the schema information for the "users" table.
 	UsersTable = &schema.Table{
 		Name:       "users",
 		Columns:    UsersColumns,
 		PrimaryKey: []*schema.Column{UsersColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "users_departments_department",
+				Columns:    []*schema.Column{UsersColumns[10]},
+				RefColumns: []*schema.Column{DepartmentsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+		},
 	}
 	// UserRolesColumns holds the columns for the "user_roles" table.
 	UserRolesColumns = []*schema.Column{
@@ -137,6 +181,7 @@ var (
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{
 		CasbinRulesTable,
+		DepartmentsTable,
 		MaterialsTable,
 		RolesTable,
 		StocksTable,
@@ -147,6 +192,8 @@ var (
 )
 
 func init() {
+	DepartmentsTable.ForeignKeys[0].RefTable = DepartmentsTable
+	UsersTable.ForeignKeys[0].RefTable = DepartmentsTable
 	UserRolesTable.ForeignKeys[0].RefTable = UsersTable
 	UserRolesTable.ForeignKeys[1].RefTable = RolesTable
 }

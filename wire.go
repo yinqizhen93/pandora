@@ -12,6 +12,7 @@ import (
 	"pandora/service/config"
 	"pandora/service/db"
 	"pandora/service/logger"
+	"pandora/service/sse"
 )
 
 func initApp(addr ...string) *App {
@@ -23,6 +24,7 @@ func initApp(addr ...string) *App {
 		mdw.ProviderSet,
 		cache.ProviderSet,
 		config.ProviderSet,
+		sse.ProviderSet,
 		//access.ProviderSet,
 		NewApp,
 	))
