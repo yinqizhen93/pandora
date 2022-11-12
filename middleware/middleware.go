@@ -14,12 +14,12 @@ type Middleware struct {
 	logger     logger.Logger
 	db         *ent.Client
 	cache      cache.Cacher
-	accessCtrl access.RBAC  // only init rbac when use
-	sse        *sse.SSEvent // only init when use
-	ws         *ws.Hub      // only init when use
+	accessCtrl access.RBAC // only init rbac when use
+	sse        *sse.SSEvent
+	ws         *ws.ClientHub
 }
 
-func NewMiddleware(logger logger.Logger, db *ent.Client, cache cache.Cacher, s *sse.SSEvent, ws *ws.Hub) *Middleware {
+func NewMiddleware(logger logger.Logger, db *ent.Client, cache cache.Cacher, s *sse.SSEvent, ws *ws.ClientHub) *Middleware {
 	return &Middleware{logger: logger, db: db, cache: cache, sse: s, ws: ws}
 }
 

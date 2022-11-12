@@ -12,10 +12,10 @@ type Handler struct {
 	logger logger.Logger
 	db     *ent.Client
 	sse    *sse.SSEvent
-	ws     *ws.Hub
+	ws     *ws.ClientHub
 }
 
-func NewHandler(logger logger.Logger, db *ent.Client, s *sse.SSEvent, ws *ws.Hub) *Handler {
+func NewHandler(logger logger.Logger, db *ent.Client, s *sse.SSEvent, ws *ws.ClientHub) *Handler {
 	return &Handler{
 		logger: logger,
 		db:     db,

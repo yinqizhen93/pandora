@@ -34,7 +34,7 @@ func (mdw *Middleware) WebSocket() gin.HandlerFunc {
 			SendStream:    make(chan []byte, 256),
 		}
 		fmt.Println("find new ws client")
-		client.Hub.Register <- client
+		client.Hub.ClientRegister <- client
 		// Allow collection of memory referenced by the caller by doing all work in
 		// new goroutines.
 		go client.KeepReceive()

@@ -100,7 +100,7 @@ func (h *Handler) StartTaskWS(c *gin.Context) {
 		// Send current time to clients message channel
 		now := time.Now().Format("2006-01-02 15:04:05")
 		currentTime := fmt.Sprintf("The Current Time Is %v with msg %v", now, msg)
-		h.ws.Message <- []byte(currentTime)
+		h.ws.MessageBroadcaster <- []byte(currentTime)
 	}
 
 	//go func() {

@@ -27,39 +27,23 @@ var (
 	space   = []byte{' '}
 )
 
-//var upgrader = websocket.Upgrader{
-//	ReadBufferSize:  1024,
-//	WriteBufferSize: 1024,
-//	// 解决跨域问题
-//	CheckOrigin: func(r *http.Request) bool {
-//		return true
-//	},
-//}
-
 const WebSocketClient = "_WebSocketClient"
 
 // Client is a middleman between the websocket connection and the hub.
 type Client struct {
-	Hub *Hub
-
+	Hub *ClientHub
 	// The websocket connection.
 	Conn *websocket.Conn
-
 	// Buffered channel of outbound messages.
 	ReceiveStream chan []byte // 缓存接收的消息
 	SendStream    chan []byte // 缓存发送的消息
 }
 
-// readPump pumps messages from the websocket connection to the hub.
-//
-// The application runs readPump in a per-connection goroutine. The application
-// ensures that there is at most one reader on a connection by executing all
-// reads from this goroutine.
-//
+// KeepReceive 从c.Conn读取数据放入ReceiveStream
 func (c *Client) KeepReceive() {
 	defer func() {
 		// 退出，删除client, 关闭连接
-		c.Hub.Unregister <- c
+		c.Hub.ClientUnregister <- c
 		fmt.Println("ws client is closing...")
 		c.Conn.Close()
 	}()
@@ -79,12 +63,7 @@ func (c *Client) KeepReceive() {
 	}
 }
 
-// writePump pumps messages from the hub to the websocket connection.
-//
-// A goroutine running writePump is started for each connection. The
-// application ensures that there is at most one writer to a connection by
-// executing all writes from this goroutine.
-//
+// KeepSend 从c.SendStream读取数据并写入c.Conn
 func (c *Client) KeepSend() {
 	ticker := time.NewTicker(pingPeriod)
 	defer func() {
@@ -100,24 +79,24 @@ func (c *Client) KeepSend() {
 				c.Conn.WriteMessage(websocket.CloseMessage, []byte{})
 				return
 			}
-
 			w, err := c.Conn.NextWriter(websocket.TextMessage)
 			if err != nil {
 				return
 			}
 			w.Write(message)
-
 			// Add queued chat messages to the current websocket message.
 			n := len(c.SendStream)
+			// 读取所有缓存的数据，换行分隔
 			for i := 0; i < n; i++ {
 				w.Write(newline)
 				w.Write(<-c.SendStream)
 			}
-
+			// w.Close() 回将消息写入网络
 			if err := w.Close(); err != nil {
 				return
 			}
 		case <-ticker.C:
+			// 定时ping客户端， 以判断连接是否存活
 			c.Conn.SetWriteDeadline(time.Now().Add(writeWait))
 			if err := c.Conn.WriteMessage(websocket.PingMessage, nil); err != nil {
 				return
@@ -125,28 +104,3 @@ func (c *Client) KeepSend() {
 		}
 	}
 }
-
-//// WebSocketHandler handles websocket requests from the peer.
-//func WebSocketHandler() gin.HandlerFunc {
-//
-//	return func(c *gin.Context) {
-//		conn, err := upgrader.Upgrade(c.Writer, c.Request, nil)
-//		if err != nil {
-//			log.Println(err)
-//			return
-//		}
-//		client := &Client{
-//			hub:           hub,
-//			conn:          conn,
-//			ReceiveStream: make(chan []byte, 256),
-//			sendStream:    make(chan []byte, 256),
-//		}
-//		fmt.Println("find new ws client")
-//		WSHub.register <- client
-//		// Allow collection of memory referenced by the caller by doing all work in
-//		// new goroutines.
-//		go client.keepReceive()
-//		go client.keepSend()
-//		c.Set(WebSocketClient, client)
-//	}
-//}

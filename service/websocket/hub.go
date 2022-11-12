@@ -5,48 +5,48 @@ import (
 	"github.com/google/wire"
 )
 
-// Hub maintains the set of active clients and broadcasts messages to the
+// ClientHub maintains the set of active clients and broadcasts messages to the
 // clients.
-type Hub struct {
+type ClientHub struct {
 	// Registered clients.
 	clients map[*Client]struct{}
-
 	// Inbound messages from the clients.
-	Message chan []byte // 桥接作用，实现一个服务端发送，多个客户端接收
-
+	MessageBroadcaster chan []byte // 桥接作用，将服务端写入的数据，广播给所有客户端
 	// Register requests from the clients.
-	Register chan *Client
-
+	ClientRegister chan *Client
 	// Unregister requests from clients.
-	Unregister chan *Client
+	ClientUnregister chan *Client
 }
 
 var ProviderSet = wire.NewSet(NewHub)
 
-func NewHub() (hub *Hub) {
-	hub = &Hub{
-		clients:    make(map[*Client]struct{}),
-		Message:    make(chan []byte),
-		Register:   make(chan *Client),
-		Unregister: make(chan *Client),
+func NewHub() (hub *ClientHub) {
+	hub = &ClientHub{
+		clients:            make(map[*Client]struct{}),
+		MessageBroadcaster: make(chan []byte),
+		ClientRegister:     make(chan *Client),
+		ClientUnregister:   make(chan *Client),
 	}
 	go hub.listen()
 	return
 }
 
-func (h *Hub) listen() {
+func (h *ClientHub) listen() {
 	for {
 		select {
-		case client := <-h.Register:
+		// 新的客户端连接
+		case client := <-h.ClientRegister:
 			fmt.Println("registering new ws client")
 			h.clients[client] = struct{}{}
-		case client := <-h.Unregister:
+		// 客户端断开连接
+		case client := <-h.ClientUnregister:
 			// todo 这里的OK 判断是否必须？
 			if _, ok := h.clients[client]; ok {
 				delete(h.clients, client)
 				close(client.SendStream)
 			}
-		case msg := <-h.Message: // 接受到服务端写入数据，广播给所有客户端连接
+		// 接受到服务端写入数据，广播给所有客户端连接
+		case msg := <-h.MessageBroadcaster: // 接受到服务端写入数据，广播给所有客户端连接
 			for client := range h.clients {
 				select {
 				case client.SendStream <- msg:
