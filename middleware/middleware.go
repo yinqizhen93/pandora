@@ -19,8 +19,8 @@ type Middleware struct {
 	ws         *ws.Hub      // only init when use
 }
 
-func NewMiddleware(logger logger.Logger, db *ent.Client, cache cache.Cacher, s *sse.SSEvent) *Middleware {
-	return &Middleware{logger: logger, db: db, cache: cache, sse: s}
+func NewMiddleware(logger logger.Logger, db *ent.Client, cache cache.Cacher, s *sse.SSEvent, ws *ws.Hub) *Middleware {
+	return &Middleware{logger: logger, db: db, cache: cache, sse: s, ws: ws}
 }
 
 var ProviderSet = wire.NewSet(NewMiddleware)

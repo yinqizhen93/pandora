@@ -5,19 +5,22 @@ import (
 	"pandora/ent"
 	"pandora/service/logger"
 	"pandora/service/sse"
+	ws "pandora/service/websocket"
 )
 
 type Handler struct {
 	logger logger.Logger
 	db     *ent.Client
 	sse    *sse.SSEvent
+	ws     *ws.Hub
 }
 
-func NewHandler(logger logger.Logger, db *ent.Client, s *sse.SSEvent) *Handler {
+func NewHandler(logger logger.Logger, db *ent.Client, s *sse.SSEvent, ws *ws.Hub) *Handler {
 	return &Handler{
 		logger: logger,
 		db:     db,
 		sse:    s,
+		ws:     ws,
 	}
 }
 

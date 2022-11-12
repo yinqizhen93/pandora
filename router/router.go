@@ -9,7 +9,6 @@ import (
 	"pandora/api/handler"
 	_ "pandora/docs" // 以上导入for Swagger
 	mdw "pandora/middleware"
-	ws "pandora/service/websocket"
 )
 
 //var Router = gin.Default()
@@ -101,7 +100,7 @@ func (ar *AppRouter) addMaterialRouter() {
 	r := ar.router.Group("/materials")
 	{
 		r.GET("", ar.handler.GetMaterial)
-		r.GET("/edit", ws.WebSocketHandler(), ar.handler.EditMaterial)
+		r.GET("/edit", ar.mdw.WebSocket(), ar.handler.EditMaterial)
 		r.PUT("/:id", ar.handler.UpdateMaterial)
 	}
 }
@@ -122,7 +121,7 @@ func (ar *AppRouter) addSSERouter() {
 }
 
 func (ar *AppRouter) addWSRouter() {
-	r := ar.router.Group("/ws", ar.mdw.JWTAuth(), ws.WebSocketHandler()) // JWTAuth授权
+	r := ar.router.Group("/ws", ar.mdw.JWTAuth(), ar.mdw.WebSocket()) // JWTAuth授权
 	{
 		r.GET("/task", ar.handler.StartTaskWS)
 	}

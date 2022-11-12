@@ -13,6 +13,7 @@ import (
 	"pandora/service/db"
 	"pandora/service/logger"
 	"pandora/service/sse"
+	"pandora/service/websocket"
 )
 
 func initApp(addr ...string) *App {
@@ -25,6 +26,7 @@ func initApp(addr ...string) *App {
 		cache.ProviderSet,
 		config.ProviderSet,
 		sse.ProviderSet,
+		ws.ProviderSet,
 		//access.ProviderSet,
 		NewApp,
 	))

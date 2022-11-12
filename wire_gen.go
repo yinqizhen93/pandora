@@ -15,6 +15,7 @@ import (
 	"pandora/service/db"
 	"pandora/service/logger"
 	"pandora/service/sse"
+	"pandora/service/websocket"
 )
 
 // Injectors from wire.go:
@@ -25,8 +26,9 @@ func initApp(addr ...string) *App {
 	cacher := cache.NewCacher()
 	client := db.NewEntClient(cacher, configConfig)
 	ssEvent := sse.NewSSEvent()
-	handlerHandler := handler.NewHandler(loggerLogger, client, ssEvent)
-	middlewareMiddleware := middleware.NewMiddleware(loggerLogger, client, cacher, ssEvent)
+	hub := ws.NewHub()
+	handlerHandler := handler.NewHandler(loggerLogger, client, ssEvent, hub)
+	middlewareMiddleware := middleware.NewMiddleware(loggerLogger, client, cacher, ssEvent, hub)
 	appRouter := router.NewAppRouter(handlerHandler, middlewareMiddleware)
 	app := NewApp(appRouter, configConfig)
 	return app
