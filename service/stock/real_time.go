@@ -97,6 +97,7 @@ func RealtimePrice(code, market string) float64 {
 	rand.Seed(time.Now().Unix())
 	choices := []func(string, string) (float64, error){requestQt, requestXueQiu}
 	tick := time.NewTicker(time.Second * 3)
+	defer tick.Stop()
 	for {
 		select {
 		case <-tick.C:
