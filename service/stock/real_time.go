@@ -1,12 +1,14 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"github.com/pkg/errors"
 	"golang.org/x/text/encoding/simplifiedchinese"
 	"golang.org/x/text/transform"
 	"io"
+	"log"
 	"math/rand"
 	"net/http"
 	"strconv"
@@ -93,7 +95,7 @@ func requestQt(code, market string) (float64, error) {
 	return f, nil
 }
 
-func RealtimePrice(code, market string) float64 {
+func RealtimePrice(ctx context.Context, code, market string) {
 	rand.Seed(time.Now().Unix())
 	choices := []func(string, string) (float64, error){requestQt, requestXueQiu}
 	tick := time.NewTicker(time.Second * 3)
@@ -103,13 +105,19 @@ func RealtimePrice(code, market string) float64 {
 		case <-tick.C:
 			v, err := choices[rand.Intn(len(choices))](code, market)
 			if err != nil {
-				panic(err)
+				fmt.Printf("请求失败：%v\n", err)
+				//break
 			}
 			fmt.Println(v)
+		case <-ctx.Done():
+			log.Println("context canceled")
+			return
 		}
 	}
 }
 
 func main() {
-	RealtimePrice("600000", "sh")
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
+	defer cancel()
+	RealtimePrice(ctx, "600000", "sh")
 }
