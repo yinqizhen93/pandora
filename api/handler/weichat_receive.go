@@ -26,6 +26,8 @@ var AppId = "wx285e860ef821d3d0"
 
 var AppSecret = "adf6d2947489627d91f124df0a941ede"
 
+var EncodingAESKey = "4IFFW477xAiIgaNgFVmKtsa4dkB0IcaQEc8NG7YX5Xu"
+
 func GetAccessToken() {
 	url := fmt.Sprintf("https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid=%s&secret=%s", AppId, AppSecret)
 	resp, err := http.Get(url)
