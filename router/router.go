@@ -49,6 +49,7 @@ func (ar *AppRouter) Run(addr ...string) error {
 func (ar *AppRouter) InitRouter() {
 	ar.addSwaggerRouter()
 	ar.addLoginRouter()
+	ar.addRegisterRouter()
 	ar.addAuthRouter()
 	ar.addStockRouter()
 	ar.addTaskRouter()
@@ -71,6 +72,10 @@ func (ar *AppRouter) addWechatApiRouter() {
 
 func (ar *AppRouter) addLoginRouter() {
 	ar.router.POST("/login", ar.handler.Login)
+}
+
+func (ar *AppRouter) addRegisterRouter() {
+	ar.router.POST("/register", ar.handler.Register)
 }
 
 func (ar *AppRouter) addAuthRouter() {

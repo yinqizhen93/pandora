@@ -4,6 +4,8 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"fmt"
 	"github.com/gin-gonic/gin"
+	"github.com/pkg/errors"
+	"golang.org/x/crypto/bcrypt"
 	"pandora/api"
 	"pandora/ent/user"
 	"runtime/debug"
@@ -51,6 +53,7 @@ type UserRequest struct {
 	Email       string `json:"email" binding:"required,email"`
 	PhoneNumber string `json:"phone_number" binding:"required"`
 	Roles       []int  `json:"roles" binding:"required"`
+	Department  int    `json:"department" binding:"required"`
 }
 
 // CreateUser 创建用户接口
@@ -75,12 +78,17 @@ func (h Handler) CreateUser(c *gin.Context) {
 	//	return
 	//}
 	ctx := c.Request.Context()
+	pwd, err := encryptedPassword(ur.Password)
+	if err != nil {
+		panic(err)
+	}
 	u, err := h.db.User.Create().
 		SetUsername(ur.Username).
-		SetPassword(ur.Password).
+		SetPassword(pwd).
 		SetEmail(ur.Email).
 		SetPhoneNumber(ur.PhoneNumber).
 		AddRoleIDs(ur.Roles...).
+		SetDepartmentID(ur.Department).
 		Save(ctx)
 	if err != nil {
 		h.logger.Error(fmt.Sprintf("创建用户失败:%s; %s", err, string(debug.Stack())))
@@ -154,4 +162,12 @@ func (h Handler) DeleteUser(c *gin.Context) {
 		"code":    200,
 		"msg":     "删除成功",
 	})
+}
+
+func encryptedPassword(passwd string) (string, error) {
+	hashBytes, err := bcrypt.GenerateFromPassword([]byte(passwd), bcrypt.DefaultCost)
+	if err != nil {
+		return "", errors.Wrap(err, "密码加密失败")
+	}
+	return string(hashBytes), nil
 }
