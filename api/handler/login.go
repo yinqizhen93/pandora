@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/pkg/errors"
+	"golang.org/x/crypto/bcrypt"
 	"net/http"
 	"pandora/api"
 	"pandora/ent/user"
@@ -26,9 +27,11 @@ func (h Handler) Login(c *gin.Context) {
 		return
 	}
 	// 校验用户名和密码是否正确
-	if userInf.Username == "admin" && userInf.Password == "123" {
+	//if userInf.Username == "admin" && userInf.Password == "123" {
+	ctx := c.Request.Context()
+	// todo handle err
+	if ok, err := h.validUserAndPasswd(ctx, userInf.Username, userInf.Password); err == nil && ok {
 		// 生成Token
-		ctx := c.Request.Context()
 		userId, err := h.getUserIdByName(ctx, userInf.Username)
 		if err != nil {
 			// todo 记录日志
@@ -60,4 +63,16 @@ func (h Handler) getUserIdByName(ctx context.Context, name string) (int, error) 
 		return 0, errors.Wrap(err, "getUserIdByName failed")
 	}
 	return userId, nil
+}
+
+func (h Handler) validUserAndPasswd(ctx context.Context, username, passwd string) (bool, error) {
+	pwdHash, err := h.db.User.Query().Where(user.UsernameEQ(username)).Select("password").String(ctx)
+	if err != nil {
+		return false, errors.Wrap(err, "查询用户失败")
+	}
+	err = bcrypt.CompareHashAndPassword([]byte(pwdHash), []byte(passwd))
+	if err != nil {
+		return false, nil
+	}
+	return true, nil
 }

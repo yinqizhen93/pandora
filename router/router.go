@@ -49,6 +49,7 @@ func (ar *AppRouter) Run(addr ...string) error {
 func (ar *AppRouter) InitRouter() {
 	ar.addSwaggerRouter()
 	ar.addLoginRouter()
+	ar.addRegisterRouter()
 	ar.addAuthRouter()
 	ar.addStockRouter()
 	ar.addTaskRouter()
@@ -56,15 +57,25 @@ func (ar *AppRouter) InitRouter() {
 	ar.addWSRouter()
 	ar.addMaterialRouter()
 	ar.addDepartmentRouter()
+	ar.addWechatApiRouter()
 }
 
 // see api docs on http://localhost:5001/swagger/index.html
+
 func (ar *AppRouter) addSwaggerRouter() {
 	ar.router.GET("/swagger/*any", gs.WrapHandler(swaggerFiles.Handler))
 }
 
+func (ar *AppRouter) addWechatApiRouter() {
+	ar.router.POST("/", ar.handler.WechatReceive)
+}
+
 func (ar *AppRouter) addLoginRouter() {
 	ar.router.POST("/login", ar.handler.Login)
+}
+
+func (ar *AppRouter) addRegisterRouter() {
+	ar.router.POST("/register", ar.handler.Register)
 }
 
 func (ar *AppRouter) addAuthRouter() {

@@ -5,6 +5,7 @@ import (
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
 	"log"
+	"pandora/ent"
 	"pandora/service"
 	"strings"
 )
@@ -39,7 +40,14 @@ func (mdw *Middleware) JWTAuthMiddleware() gin.HandlerFunc {
 					if claims, ok := tk.Claims.(*service.Claims); ok {
 						can, err := mdw.tokenCanRefresh(c.Request.Context(), claims.UserId)
 						if err != nil {
-							panic(err)
+							// same as
+							//nfe := &ent.NotFoundError{}
+							//if errors.As(err, &nfe) { // 必须写nfe地址
+							if _, ok2 := err.(*ent.NotFoundError); ok2 {
+								goto fail
+							} else {
+								panic(err)
+							}
 						}
 						if can {
 							newToken, err := service.CreateToken(claims.UserId)
@@ -55,6 +63,7 @@ func (mdw *Middleware) JWTAuthMiddleware() gin.HandlerFunc {
 					}
 				}
 			}
+		fail:
 			c.AbortWithStatusJSON(401, gin.H{
 				"msg": "无效的Token",
 			})
