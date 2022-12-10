@@ -14,7 +14,7 @@ import (
 
 // time_format:"2006-01-02" validate 只在tag form 里面起作用，tag json里不起作用
 type materialQuery struct {
-	Page     int `form:"page" binding:"required,gte=1"`
+	Page     int `form:"page" binding:"required,gte=1"` // get请求时，tag是form，不是json
 	PageSize int `form:"pageSize" binding:"required"`
 }
 
@@ -55,7 +55,7 @@ func (h Handler) UpdateMaterial(c *gin.Context) {
 		h.logger.Error(fmt.Sprintf("参数错误:%s; %s", err, string(debug.Stack())))
 		return
 	}
-	um, err := api.ParseJsonFormInputMap(c)
+	um, err := api.ParseParamsToMap(c)
 	fmt.Println("um", um)
 	if err != nil {
 		h.logger.Error(fmt.Sprintf("请求参数解析失败：%s; \n %s", err, debug.Stack()))
@@ -126,7 +126,7 @@ func (h *Handler) EditMaterial(c *gin.Context) {
 }
 
 func (h Handler) updateDbMaterial(c *gin.Context) {
-	um, err := api.ParseJsonFormInputMap(c)
+	um, err := api.ParseParamsToMap(c)
 	strId, ok := um["id"]
 	if !ok {
 		c.JSON(200, api.FailResponse(1002, "参数错误"))

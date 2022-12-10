@@ -10,8 +10,8 @@ import (
 	"sync"
 )
 
-// ParseJsonFormInputMap 解析请求里的json参数或formData参数转换为map类型
-func ParseJsonFormInputMap(c *gin.Context) (map[string]any, error) {
+// ParseParamsToMap 解析请求里的json参数或formData参数转换为map类型
+func ParseParamsToMap(c *gin.Context) (map[string]any, error) {
 	contentType := c.ContentType()
 	postMap := make(map[string]any)
 	if contentType == "application/json" {
@@ -67,8 +67,8 @@ func ParseJsonFormInputMap(c *gin.Context) (map[string]any, error) {
 	return nil, errors.New("wrong content-type")
 }
 
-// RequestInputs 获取所有参数
-func RequestInputs(c *gin.Context) (map[string]interface{}, error) {
+// MergeRequestParams 获取所有参数，request body参数和url参数同时存在时， 获取所有参数到一个map里面
+func MergeRequestParams(c *gin.Context) (map[string]interface{}, error) {
 
 	const defaultMemory = 32 << 20
 	contentType := c.ContentType()
